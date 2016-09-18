@@ -132,8 +132,8 @@ func run() error {
 	r := mux.NewRouter()
 
 	// Authentication
-	r.Handle("/get-token", GetTokenHandler)
-	r.Handle("/authTest", jwtMiddleware.Handler(authTest))
+	r.Handle("/1.0/get-token", GetTokenHandler)
+	r.Handle("/1.0/authTest", jwtMiddleware.Handler(authTest))
 
 	r.Handle("/1.0/containerHosts", jwtMiddleware.Handler(restContainerHostListHandler))
 
