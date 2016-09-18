@@ -5,36 +5,41 @@ import (
 	"fmt"
 //	"io"
 	"io/ioutil"
-	"math/rand"
+//	"math/rand"
 	"net/http"
 	"os"
 //	"strings"
-	"time"
+//	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/lxc/lxd"
 	"golang.org/x/exp/inotify"
 	"gopkg.in/yaml.v2"
 	"github.com/rs/cors"
-
 )
+
 
 // Global variables
 var lxdDaemon *lxd.Client
 var config serverConfig
 
 type serverConfig struct {
-	ServerAddr          string   `yaml:"server_addr"`
-	ServerBannedIPs     []string `yaml:"server_banned_ips"`
-	Jwtsecret						string   `yaml:"jwtsecret"`
+	ServerAddr          string   				`yaml:"server_addr"`
+	ServerBannedIPs     []string 				`yaml:"server_banned_ips"`
+	Jwtsecret						string   				`yaml:"jwtsecret"`
+	//ContainerDomain		  string   				`yaml:"container_domain"`
+	ContainerHosts			[]ContainerHost	`yaml:"container_hosts"`
 }
 
 type statusCode int
 
 
 func main() {
-	rand.Seed(time.Now().UTC().UnixNano())
-	err := run()
+//	rand.Seed(time.Now().UTC().UnixNano())
+
+	var err error
+
+	err = run()
 	if err != nil {
 		fmt.Printf("error: %s\n", err)
 		os.Exit(1)
@@ -129,6 +134,8 @@ func run() error {
 	// Authentication
 	r.Handle("/get-token", GetTokenHandler)
 	r.Handle("/authTest", jwtMiddleware.Handler(authTest))
+
+	r.Handle("/1.0/containerHosts", jwtMiddleware.Handler(restContainerHostListHandler))
 
 	r.Handle("/1.0/baseContainers", jwtMiddleware.Handler(restBaseContainerListHandler))
 

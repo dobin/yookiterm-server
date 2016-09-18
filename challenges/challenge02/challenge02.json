@@ -9,5 +9,5 @@
 	"Text":"",
 	"NumberOfTerminals": 2,
 	"HLCaseID": 123,
-	"ContainerHost": "host-aslr"
+	"ContainerHostAlias": "ubuntuaslr"
 }

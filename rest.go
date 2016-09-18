@@ -13,6 +13,11 @@ type BaseContainer struct {
 	Id string
 }
 
+type ContainerHost struct {
+	HostnameAlias string
+	Hostname string
+}
+
 
 var restBaseContainerListHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -24,6 +29,18 @@ var restBaseContainerListHandler = http.HandlerFunc(func(w http.ResponseWriter, 
 	baseContainerList[1] = BaseContainer{"hlUbuntu32aslr", "2"}
 
 	err := json.NewEncoder(w).Encode(baseContainerList)
+	if err != nil {
+		http.Error(w, "Internal server error", 500)
+		return
+	}
+})
+
+
+var restContainerHostListHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+
+	err := json.NewEncoder(w).Encode(config.ContainerHosts)
 	if err != nil {
 		http.Error(w, "Internal server error", 500)
 		return

@@ -21,9 +21,8 @@ type Challenge struct {
 	Title string
 	Text string
 	TextFilename string
-	ContainerHost string
+	ContainerHostAlias string
 }
-
 
 
 // Load all challenges from the challenge directory
@@ -55,6 +54,10 @@ func loadChallenges() {
 				fmt.Println("Error reading file: ", f)
 			}
 			challenge.Text = string(markupFileContent)
+
+			//if config.ContainerDomain != "" {
+			//	challenge.ContainerHostFQDN = challenge.ContainerHost + "." + config.ContainerDomain
+			//}
 
 			challengeList = append(challengeList, challenge)
 		}
