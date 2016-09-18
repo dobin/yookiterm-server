@@ -1,0 +1,13 @@
+{
+	"Id":"6",
+	"ContainerBaseName":"hlUbuntu64aslr",
+	"ContainerArch":32,
+	"ContainerAslr":"1",
+	"ContainerUser":"root",
+	"Title":"BoF intro 64",
+	"TextFilename": "challenge06.md",
+	"Text":"",
+	"NumberOfTerminals": 2,
+	"HLCaseID": 123,
+	"ContainerHost": "host-aslr"
+}

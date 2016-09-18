@@ -1,0 +1,13 @@
+{
+	"Id":"5",
+	"ContainerBaseName":"hlUbuntu32aslr",
+	"ContainerArch":32,
+	"ContainerAslr":"1",
+	"ContainerUser":"root",
+	"Title":"BoF intro 32",
+	"TextFilename": "challenge05.md",
+	"Text":"",
+	"NumberOfTerminals": 2,
+	"HLCaseID": 123,
+	"ContainerHost": "host-aslr"
+}

@@ -1,0 +1,13 @@
+{
+	"Id":"1",
+	"ContainerBaseName":"hlUbuntu32aslr",
+	"ContainerArch":32,
+	"ContainerAslr":"1",
+	"ContainerUser":"root",
+	"Title":"Buffer Overflow Analysis",
+	"TextFilename": "challenge01.md",
+	"Text":"",
+	"NumberOfTerminals": 2,
+	"HLCaseID": 123,
+	"ContainerHost": "host-aslr"
+}

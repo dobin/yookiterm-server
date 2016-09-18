@@ -1,0 +1,13 @@
+{
+	"Id":"3",
+	"ContainerBaseName":"hlUbuntu32aslr",
+	"ContainerArch":32,
+	"ContainerAslr":"1",
+	"ContainerUser":"root",
+	"Title":"Shellcode Intro Lab",
+	"TextFilename": "challenge03.md",
+	"Text":"",
+	"NumberOfTerminals": 2,
+	"HLCaseID": 123,
+	"ContainerHost": "host-aslr"
+}
