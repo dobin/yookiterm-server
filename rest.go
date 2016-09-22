@@ -2,15 +2,14 @@ package main
 
 import (
 	"encoding/json"
-//	"fmt"
 	"net/http"
 	"github.com/gorilla/mux"
 )
 
 
 type BaseContainer struct {
-	Name string
 	Id string
+	Name string
 }
 
 type ContainerHost struct {
@@ -23,12 +22,7 @@ var restBaseContainerListHandler = http.HandlerFunc(func(w http.ResponseWriter, 
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 
-	var baseContainerList [2]BaseContainer
-
-	baseContainerList[0] = BaseContainer{"beta", "1"}
-	baseContainerList[1] = BaseContainer{"hlUbuntu32aslr", "2"}
-
-	err := json.NewEncoder(w).Encode(baseContainerList)
+	err := json.NewEncoder(w).Encode(config.BaseContainers)
 	if err != nil {
 		http.Error(w, "Internal server error", 500)
 		return

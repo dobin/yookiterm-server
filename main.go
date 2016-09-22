@@ -27,8 +27,8 @@ type serverConfig struct {
 	ServerAddr          string   				`yaml:"server_addr"`
 	ServerBannedIPs     []string 				`yaml:"server_banned_ips"`
 	Jwtsecret						string   				`yaml:"jwtsecret"`
-	//ContainerDomain		  string   				`yaml:"container_domain"`
 	ContainerHosts			[]ContainerHost	`yaml:"container_hosts"`
+	BaseContainers			[]BaseContainer `yaml:"base_containers"`
 }
 
 type statusCode int
