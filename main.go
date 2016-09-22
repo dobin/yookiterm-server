@@ -1,15 +1,10 @@
 package main
 
 import (
-//	"crypto/sha256"
 	"fmt"
-//	"io"
 	"io/ioutil"
-//	"math/rand"
 	"net/http"
 	"os"
-//	"strings"
-//	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/lxc/lxd"
@@ -46,10 +41,11 @@ func main() {
 	}
 }
 
+
 func parseConfig() error {
-	data, err := ioutil.ReadFile("lxd-demo.yml")
+	data, err := ioutil.ReadFile("yookiterm-server.yml")
 	if os.IsNotExist(err) {
-		return fmt.Errorf("The configuration file (lxd-demo.yml) doesn't exist.")
+		return fmt.Errorf("The configuration file (yookiterm-server.yml) doesn't exist.")
 	} else if err != nil {
 		return fmt.Errorf("Unable to read the configuration: %s", err)
 	}
@@ -62,15 +58,6 @@ func parseConfig() error {
 	if config.ServerAddr == "" {
 		config.ServerAddr = ":8080"
 	}
-
-	//config.ServerTerms = strings.TrimRight(config.ServerTerms, "\n")
-	//hash := sha256.New()
-	//io.WriteString(hash, config.ServerTerms)
-	//config.ServerTermsHash = fmt.Sprintf("%x", hash.Sum(nil))
-
-	//if config.Container == "" && config.Image == "" {
-	//	return fmt.Errorf("No container or image specified in configuration")
-	//}
 
 	return nil
 }
@@ -92,7 +79,7 @@ func configWatcher() {
 		for {
 			select {
 			case ev := <-watcher.Event:
-				if ev.Name != "./lxd-demo.yml" {
+				if ev.Name != "./yookiterm-config.yml" {
 					continue
 				}
 
