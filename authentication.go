@@ -1,7 +1,6 @@
 package main
 
 import(
-//  "github.com/joho/godotenv"
   "github.com/dgrijalva/jwt-go"
   "github.com/auth0/go-jwt-middleware"
 	"net/http"
@@ -14,10 +13,6 @@ import(
 var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
-
-//  if (r.Method == "OPTIONS") {
-//    return;
-//  }
 
 	body := make(map[string]interface{})
 
@@ -43,6 +38,7 @@ var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
   isAuthenticated := false
   if password == "demo" {
       isAuthenticated = true
+      logger.Infof("User %s authenticated successfully", userId)
   }
 
 

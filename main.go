@@ -11,6 +11,7 @@ import (
 	"golang.org/x/exp/inotify"
 	"gopkg.in/yaml.v2"
 	"github.com/rs/cors"
+	"github.com/howbazaar/loggo"
 )
 
 
@@ -27,6 +28,9 @@ type serverConfig struct {
 }
 
 type statusCode int
+
+var logger = loggo.GetLogger("project.main")
+
 
 
 func main() {
@@ -103,6 +107,8 @@ func configWatcher() {
 func run() error {
 	var err error
 
+	initLogger()
+
 	// Setup configuration
 	err = parseConfig()
 	if err != nil {
@@ -147,4 +153,9 @@ func run() error {
 	}
 
 	return nil
+}
+
+
+func initLogger() {
+	logger.SetLogLevel(loggo.DEBUG)
 }
