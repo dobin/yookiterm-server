@@ -1,13 +1,13 @@
 {
 	"Id":"2",
-	"ContainerBaseName":"hlUbuntu32aslr",
+	"ContainerBaseName":"hlUbuntu32",
+	"ContainerHostAlias": "ubuntuaslr",
 	"ContainerArch":32,
-	"ContainerAslr":"1",
+	"ContainerAslr":"0",
 	"ContainerUser":"root",
-	"Title":"Buffer overflow - overwrite variables on the stack",
+	"Title":"Simple Buffer overflow - overwrite variables on the stack",
 	"TextFilename": "challenge02.md",
 	"Text":"",
 	"NumberOfTerminals": 2,
-	"HLCaseID": 123,
-	"ContainerHostAlias": "ubuntuaslr"
+	"HLCaseID": 123
 }

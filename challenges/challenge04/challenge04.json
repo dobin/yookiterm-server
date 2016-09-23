@@ -1,6 +1,7 @@
 {
 	"Id":"4",
-	"ContainerBaseName":"hlUbuntu32aslr",
+	"ContainerBaseName":"hlUbuntu32",
+	"ContainerHostAlias": "ubuntuaslr",
 	"ContainerArch":32,
 	"ContainerAslr":"1",
 	"ContainerUser":"root",
@@ -8,6 +9,5 @@
 	"TextFilename": "challenge04.md",
 	"Text":"",
 	"NumberOfTerminals": 2,
-	"HLCaseID": 123,
-	"ContainerHostAlias": "ubuntuaslr"
+	"HLCaseID": 123
 }
