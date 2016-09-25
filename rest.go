@@ -4,17 +4,20 @@ import (
 	"encoding/json"
 	"net/http"
 	"github.com/gorilla/mux"
+//	"fmt"
 )
 
 
 type BaseContainer struct {
 	Id string
 	Name string
+	Arch string
 }
 
 type ContainerHost struct {
 	HostnameAlias string
 	Hostname string
+	Aslr bool
 }
 
 
