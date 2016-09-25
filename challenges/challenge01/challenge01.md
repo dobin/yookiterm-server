@@ -2,8 +2,7 @@
 
 ## source
 
-
-binary_info.c:
+challenge1.c:
 ```
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,7 +19,7 @@ int main(int argc, char **argv) {
 You can compile it by calling `make` in the folder `~/challenges/challenge1`
 
 
-## Check File Types of the new binaries
+## file command
 
 ```
 ~/challenges/challenge1# file challenge1          
@@ -28,7 +27,7 @@ challenge1: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamicall
 ```
 
 
-## Analyze the binary using objdump
+## readelf command
 
 Type `readelf -l challenge1`
 ```
@@ -64,6 +63,7 @@ Program Headers:
    08     .init_array .fini_array .jcr .dynamic .got
 ```
 
+## objdump command
 
 Try `objdump`
 ```
@@ -184,9 +184,9 @@ Disassembly of section .plt.got:
 ```
 
 
-GDB Info Functions
+## gdb command
 
-Let's debug the binary using gdb; listing functions
+Let's debug the binary using gdb
 
 ```
 ~/challenges/challenge1# gdb -q ./challenge1
@@ -281,8 +281,6 @@ Continuing.
 Hello test
 gdb-peda$
 ```
-
-
 
 ## Security Questions
 

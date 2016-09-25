@@ -10,7 +10,6 @@ will change the function flow, which enables us to gain "admin" privileges.
 
 We have the following program:
 
-
 challenge2.c:
 ```
 #include <stdio.h>

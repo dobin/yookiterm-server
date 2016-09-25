@@ -5,7 +5,7 @@
 	"ContainerArch":32,
 	"ContainerAslr":"0",
 	"ContainerUser":"root",
-	"Title":"Shellcode Development Intro Lab",
+	"Title":"Shellcode Development Intro Lab - 32 bit",
 	"TextFilename": "challenge03.md",
 	"Text":"",
 	"NumberOfTerminals": 2,
