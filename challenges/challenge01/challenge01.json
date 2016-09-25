@@ -5,7 +5,7 @@
 	"ContainerArch":32,
 	"ContainerAslr":"1",
 	"ContainerUser":"root",
-	"Title":"Intro to Buffer Overflow Analysis",
+	"Title":"Static analysis - binary information gathering",
 	"TextFilename": "challenge01.md",
 	"Text":"",
 	"NumberOfTerminals": 2,

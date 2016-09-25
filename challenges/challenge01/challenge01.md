@@ -1,16 +1,12 @@
 # Buffer Overflow Analysis Intro Lab
 
-This little practice lab is geared toward beginners and those who want to get introduced into the eco-system of a penetration tester or ethical hacker.
-
-You will not exploit a buffer overflow in this lab; instead you get introduced to some basic tools and knowledge. This lab shall be done before the buffer overflow labs.
-
 ## source
 
+
+binary_info.c:
 ```
 #include <stdio.h>
 #include <stdlib.h>
-
-char globalVariable[] = "GlobalVar";
 
 int main(int argc, char **argv) {
     if (argc == 1) {
@@ -21,81 +17,170 @@ int main(int argc, char **argv) {
     printf("Hello %s\n", argv[1]);
 }
 ```
+You can compile it by calling `make` in the folder `~/challenges/challenge1`
 
 
 ## Check File Types of the new binaries
 
-Next, let's check if you really got a 32bit and 64bit binary out of the two gcc calls above
-
 ```
-$ file 7377_bof 7377m32_bof
-7377_bof:    ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=ea748ed128f6cc70a0e496f4c3592a32e4323404, not stripped
-7377m32_bof: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=ca4c0d02ce9809aada956abb9db6ccb980ed4a7b, not stripped
+~/challenges/challenge1# file challenge1          
+challenge1: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=a8dae60baebe49945ea443d4cc4198b946da27fc, not stripped
 ```
 
 
+## Analyze the binary using objdump
 
-Run the binaries and test short and long arguments on the command line
-
-Play around with the arguments.
-
+Type `readelf -l challenge1`
 ```
-./7377_bof hello
+~/challenges/challenge1# readelf -l ./challenge1
 
-./7377m32_bof cool
+Elf file type is EXEC (Executable file)
+Entry point 0x8048340
+There are 9 program headers, starting at offset 52
 
+Program Headers:
+  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+  PHDR           0x000034 0x08048034 0x08048034 0x00120 0x00120 R E 0x4
+  INTERP         0x000154 0x08048154 0x08048154 0x00013 0x00013 R   0x1
+      [Requesting program interpreter: /lib/ld-linux.so.2]
+  LOAD           0x000000 0x08048000 0x08048000 0x00634 0x00634 R E 0x1000
+  LOAD           0x000f08 0x08049f08 0x08049f08 0x00122 0x00124 RW  0x1000
+  DYNAMIC        0x000f14 0x08049f14 0x08049f14 0x000e8 0x000e8 RW  0x4
+  NOTE           0x000168 0x08048168 0x08048168 0x00044 0x00044 R   0x4
+  GNU_EH_FRAME   0x00053c 0x0804853c 0x0804853c 0x0002c 0x0002c R   0x4
+  GNU_STACK      0x000000 0x00000000 0x00000000 0x00000 0x00000 RW  0x10
+  GNU_RELRO      0x000f08 0x08049f08 0x08049f08 0x000f8 0x000f8 R   0x1
 
-Instead of manually giving the argument, python can do the job for you
-
-─$ ./7377_bof `python -c 'print "A"*100'`
-Hello AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-
-./7377_bof $(perl -e 'print "A"x100')
-Hello AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp
+   02     .interp .note.ABI-tag .note.gnu.build-id .gnu.hash .dynsym .dynstr .gnu.version .gnu.version_r .rel.dyn .rel.plt .init .plt .plt.got .text .fini .rodata .eh_frame_hdr .eh_frame
+   03     .init_array .fini_array .jcr .dynamic .got .got.plt .data .bss
+   04     .dynamic
+   05     .note.ABI-tag .note.gnu.build-id
+   06     .eh_frame_hdr
+   07     
+   08     .init_array .fini_array .jcr .dynamic .got
 ```
 
 
-Analyze the binary using objdump
-
-Try objdump
+Try `objdump`
 ```
+~/challenges/challenge1# objdump -d challenge1
+challenge1:     file format elf32-i386
 
-objdump -d 7377_bof
-```
+Disassembly of section .init:
 
+080482cc <_init>:
+ 80482cc:       53                      push   %ebx
+ 80482cd:       83 ec 08                sub    $0x8,%esp
+ 80482d0:       e8 9b 00 00 00          call   8048370 <__x86.get_pc_thunk.bx>
+ 80482d5:       81 c3 2b 1d 00 00       add    $0x1d2b,%ebx
+ 80482db:       8b 83 fc ff ff ff       mov    -0x4(%ebx),%eax
+ 80482e1:       85 c0                   test   %eax,%eax
+ 80482e3:       74 05                   je     80482ea <_init+0x1e>
+ 80482e5:       e8 46 00 00 00          call   8048330 <__libc_start_main@plt+0x10>
+ 80482ea:       83 c4 08                add    $0x8,%esp
+ 80482ed:       5b                      pop    %ebx
+ 80482ee:       c3                      ret    
 
-Type readelf
-```
+Disassembly of section .plt:
 
-readelf -l 7377_bof
-readelf -d 7377_bof
-readelf -d 7377_bof
-Dynamic section at offset 0x788 contains 24 entries:   
-Tag        Type                         Name/Value  
-0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
-0x000000000000000c (INIT)               0x4003e0  
-0x000000000000000d (FINI)               0x400614  
-0x0000000000000019 (INIT_ARRAY)         0x600770  
-0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)  
-0x000000000000001a (FINI_ARRAY)         0x600778  
-0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)  
-0x000000006ffffef5 (GNU_HASH)           0x400260  
-0x0000000000000005 (STRTAB)             0x4002f8  
-0x0000000000000006 (SYMTAB)             0x400280  
-0x000000000000000a (STRSZ)              68 (bytes)  
-0x000000000000000b (SYMENT)             24 (bytes)  
-0x0000000000000015 (DEBUG)              0x0  
-0x0000000000000003 (PLTGOT)             0x600960  
-0x0000000000000002 (PLTRELSZ)           96 (bytes)  
-0x0000000000000014 (PLTREL)             RELA  
-0x0000000000000017 (JMPREL)             0x400380  
-0x0000000000000007 (RELA)               0x400368  
-0x0000000000000008 (RELASZ)             24 (bytes)  
-0x0000000000000009 (RELAENT)            24 (bytes)  
-0x000000006ffffffe (VERNEED)            0x400348  
-0x000000006fffffff (VERNEEDNUM)         1  
-0x000000006ffffff0 (VERSYM)             0x40033c  
-0x0000000000000000 (NULL)               0x0
+080482f0 <printf@plt-0x10>:
+ 80482f0:       ff 35 04 a0 04 08       pushl  0x804a004
+ 80482f6:       ff 25 08 a0 04 08       jmp    *0x804a008
+ 80482fc:       00 00                   add    %al,(%eax)
+        ...
+
+08048300 <printf@plt>:
+ 8048300:       ff 25 0c a0 04 08       jmp    *0x804a00c
+ 8048306:       68 00 00 00 00          push   $0x0
+ 804830b:       e9 e0 ff ff ff          jmp    80482f0 <_init+0x24>
+
+08048310 <exit@plt>:
+ 8048310:       ff 25 10 a0 04 08       jmp    *0x804a010
+ 8048316:       68 08 00 00 00          push   $0x8
+ 804831b:       e9 d0 ff ff ff          jmp    80482f0 <_init+0x24>
+
+08048320 <__libc_start_main@plt>:
+ 8048320:       ff 25 14 a0 04 08       jmp    *0x804a014
+ 8048326:       68 10 00 00 00          push   $0x10
+ 804832b:       e9 c0 ff ff ff          jmp    80482f0 <_init+0x24>
+
+Disassembly of section .plt.got:
+
+08048330 <.plt.got>:
+ 8048330:       ff 25 fc 9f 04 08       jmp    *0x8049ffc
+ 8048336:       66 90                   xchg   %ax,%ax
+
+ Disassembly of section .text:
+
+ 08048340 <_start>:
+  8048340:       31 ed                   xor    %ebp,%ebp
+  8048342:       5e                      pop    %esi
+  8048343:       89 e1                   mov    %esp,%ecx
+  8048345:       83 e4 f0                and    $0xfffffff0,%esp
+  8048348:       50                      push   %eax
+  8048349:       54                      push   %esp
+  804834a:       52                      push   %edx
+  804834b:       68 00 85 04 08          push   $0x8048500
+  8048350:       68 a0 84 04 08          push   $0x80484a0
+  8048355:       51                      push   %ecx
+  8048356:       56                      push   %esi
+  8048357:       68 3b 84 04 08          push   $0x804843b
+  804835c:       e8 bf ff ff ff          call   8048320 <__libc_start_main@plt>
+  8048361:       f4                      hlt    
+  8048362:       66 90                   xchg   %ax,%ax
+  8048364:       66 90                   xchg   %ax,%ax
+  8048366:       66 90                   xchg   %ax,%ax
+  8048368:       66 90                   xchg   %ax,%ax
+  804836a:       66 90                   xchg   %ax,%ax
+  804836c:       66 90                   xchg   %ax,%ax
+  804836e:       66 90                   xchg   %ax,%ax
+
+[...]
+
+0804843b <main>:
+ 804843b:       8d 4c 24 04             lea    0x4(%esp),%ecx
+ 804843f:       83 e4 f0                and    $0xfffffff0,%esp
+ 8048442:       ff 71 fc                pushl  -0x4(%ecx)
+ 8048445:       55                      push   %ebp
+ 8048446:       89 e5                   mov    %esp,%ebp
+ 8048448:       51                      push   %ecx
+ 8048449:       83 ec 04                sub    $0x4,%esp
+ 804844c:       89 c8                   mov    %ecx,%eax
+ 804844e:       83 38 01                cmpl   $0x1,(%eax)
+ 8048451:       75 20                   jne    8048473 <main+0x38>
+ 8048453:       8b 40 04                mov    0x4(%eax),%eax
+ 8048456:       8b 00                   mov    (%eax),%eax
+ 8048458:       83 ec 08                sub    $0x8,%esp
+ 804845b:       50                      push   %eax
+ 804845c:       68 20 85 04 08          push   $0x8048520
+ 8048461:       e8 9a fe ff ff          call   8048300 <printf@plt>
+ 8048466:       83 c4 10                add    $0x10,%esp
+ 8048469:       83 ec 0c                sub    $0xc,%esp
+ 804846c:       6a 00                   push   $0x0
+ 804846e:       e8 9d fe ff ff          call   8048310 <exit@plt>
+ 8048473:       8b 40 04                mov    0x4(%eax),%eax
+ 8048476:       83 c0 04                add    $0x4,%eax
+ 8048479:       8b 00                   mov    (%eax),%eax
+ 804847b:       83 ec 08                sub    $0x8,%esp
+ 804847e:       50                      push   %eax
+ 804847f:       68 31 85 04 08          push   $0x8048531
+ 8048484:       e8 77 fe ff ff          call   8048300 <printf@plt>
+ 8048489:       83 c4 10                add    $0x10,%esp
+ 804848c:       b8 00 00 00 00          mov    $0x0,%eax
+ 8048491:       8b 4d fc                mov    -0x4(%ebp),%ecx
+ 8048494:       c9                      leave  
+ 8048495:       8d 61 fc                lea    -0x4(%ecx),%esp
+ 8048498:       c3                      ret    
+ 8048499:       66 90                   xchg   %ax,%ax
+ 804849b:       66 90                   xchg   %ax,%ax
+ 804849d:       66 90                   xchg   %ax,%ax
+ 804849f:       90                      nop
+
+[...]
 ```
 
 
@@ -104,53 +189,103 @@ GDB Info Functions
 Let's debug the binary using gdb; listing functions
 
 ```
-
-gdb ./7377m32_bof
-
-(gdb) info func (lists all functions in the binary)
+~/challenges/challenge1# gdb -q ./challenge1
+Reading symbols from ./challenge1...(no debugging symbols found)...done.
+gdb-peda$ run test
+Starting program: /root/challenges/challenge1/challenge1 test
+Hello test
 ```
-
-
-
-
-
-PLT stands for Procedure Linkage Table which is, put simply, used to call external procedures/functions whose address isn't known in the time of linking, and is left to be resolved by the dynamic linker at run time.
-
-
-
-GDB Disassemble main in binary
-
 
 Now let's disassemble main
+```
+gdb-peda$ disass main
+Dump of assembler code for function main:
+   0x0804843b <+0>:     lea    ecx,[esp+0x4]
+   0x0804843f <+4>:     and    esp,0xfffffff0
+   0x08048442 <+7>:     push   DWORD PTR [ecx-0x4]
+   0x08048445 <+10>:    push   ebp
+   0x08048446 <+11>:    mov    ebp,esp
+   0x08048448 <+13>:    push   ecx
+   0x08048449 <+14>:    sub    esp,0x4
+   0x0804844c <+17>:    mov    eax,ecx
+   0x0804844e <+19>:    cmp    DWORD PTR [eax],0x1
+   0x08048451 <+22>:    jne    0x8048473 <main+56>
+   0x08048453 <+24>:    mov    eax,DWORD PTR [eax+0x4]
+   0x08048456 <+27>:    mov    eax,DWORD PTR [eax]
+   0x08048458 <+29>:    sub    esp,0x8
+   0x0804845b <+32>:    push   eax
+   0x0804845c <+33>:    push   0x8048520
+   0x08048461 <+38>:    call   0x8048300 <printf@plt>
+   0x08048466 <+43>:    add    esp,0x10
+   0x08048469 <+46>:    sub    esp,0xc
+   0x0804846c <+49>:    push   0x0
+   0x0804846e <+51>:    call   0x8048310 <exit@plt>
+   0x08048473 <+56>:    mov    eax,DWORD PTR [eax+0x4]
+   0x08048476 <+59>:    add    eax,0x4
+   0x08048479 <+62>:    mov    eax,DWORD PTR [eax]
+   0x0804847b <+64>:    sub    esp,0x8
+   0x0804847e <+67>:    push   eax
+   0x0804847f <+68>:    push   0x8048531
+   0x08048484 <+73>:    call   0x8048300 <printf@plt>
+   0x08048489 <+78>:    add    esp,0x10
+   0x0804848c <+81>:    mov    eax,0x0
+   0x08048491 <+86>:    mov    ecx,DWORD PTR [ebp-0x4]
+   0x08048494 <+89>:    leave  
+   0x08048495 <+90>:    lea    esp,[ecx-0x4]
+   0x08048498 <+93>:    ret    
+End of assembler dump.
+```
 
 ```
-(gdb) disass main
+gdb-peda$ break *0x08048484
+Breakpoint 1 at 0x8048484
+gdb-peda$ run test
+[----------------------------------registers-----------------------------------]
+EAX: 0xffffd939 ("test")
+EBX: 0x0
+ECX: 0xffffd770 --> 0x2
+EDX: 0xffffd794 --> 0x0
+ESI: 0xf7fcb000 --> 0x1b1db0
+EDI: 0xf7fcb000 --> 0x1b1db0
+EBP: 0xffffd758 --> 0x0
+ESP: 0xffffd740 --> 0x8048531 ("Hello %s\n")
+EIP: 0x8048484 (<main+73>:      call   0x8048300 <printf@plt>)
+EFLAGS: 0x296 (carry PARITY ADJUST zero SIGN trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+  0x804847b <main+64>: sub    esp,0x8
+  0x804847e <main+67>: push   eax
+  0x804847f <main+68>: push   0x8048531
+=> 0x8048484 <main+73>: call   0x8048300 <printf@plt>
+  0x8048489 <main+78>: add    esp,0x10
+  0x804848c <main+81>: mov    eax,0x0
+  0x8048491 <main+86>: mov    ecx,DWORD PTR [ebp-0x4]
+  0x8048494 <main+89>: leave
+Guessed arguments:
+arg[0]: 0x8048531 ("Hello %s\n")
+arg[1]: 0xffffd939 ("test")
+[------------------------------------stack-------------------------------------]
+0000| 0xffffd740 --> 0x8048531 ("Hello %s\n")
+0004| 0xffffd744 --> 0xffffd939 ("test")
+0008| 0xffffd748 --> 0xffffd810 --> 0xffffd93e ("LESSOPEN=| /usr/bin/lesspipe %s")
+0012| 0xffffd74c --> 0x80484c1 (<__libc_csu_init+33>:   lea    eax,[ebx-0xf8])
+0016| 0xffffd750 --> 0xf7fcb3dc --> 0xf7fcc1e0 --> 0x0
+0020| 0xffffd754 --> 0xffffd770 --> 0x2
+0024| 0xffffd758 --> 0x0
+0028| 0xffffd75c --> 0xf7e31637 (<__libc_start_main+247>:       add    esp,0x10)
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
 
-GDB Breakpoint *main and get 20hex values of $ESP info
-
-With this last step, we want to run the binary in gdb
-
-
-gdb ./7377m32_bof
-(gdb) break *main
-(gdb) run
-(gdb) x/20x $esp
-(gdb) c
+Breakpoint 1, 0x08048484 in main ()
+gdb-peda$ continue
+Continuing.
+Hello test
+gdb-peda$
 ```
 
 
 
+## Security Questions
 
-
-Turn ASLR on
-
-If you have finished this task, please turn ASLR on on your computer
-
-echo 1 > /proc/sys/kernel/randomize_va_space
-Security Questions
-Please respond to the following security questions
-
-What means plt?
-Explain how you create a breakpoint in gdb at the main routine
-Explain how you disclose the ESP at a given breakpoint
-Explain how to continue debugging after you have seen the details of a breakpoint
+- Explain how you create a breakpoint in gdb at the main routine
+- Explain how you disclose the ESP at a given breakpoint
+- Explain how to continue debugging after you have seen the details of a breakpoint

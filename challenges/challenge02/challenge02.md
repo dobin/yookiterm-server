@@ -1,4 +1,4 @@
-# Buffer overflow - overwrite variables on the stack 
+# Buffer overflow - overwrite variables on the stack
 
 ## Intro
 
@@ -8,8 +8,10 @@ will change the function flow, which enables us to gain "admin" privileges.
 
 ## Vulnerable program
 
-We have the following program.
+We have the following program:
 
+
+challenge2.c:
 ```
 #include <stdio.h>
 #include <stdlib.h>
