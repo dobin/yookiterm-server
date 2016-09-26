@@ -34,17 +34,23 @@ var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 
   userId = au.UserId
   password = au.Password
-
+  isAdmin := false
   isAuthenticated := false
-  if password == "demo" {
-      isAuthenticated = true
-      logger.Infof("User %s authenticated successfully", userId)
-  }
 
+  // Authentication
+  if (userId == "admin" && password == "deemo") {
+    isAuthenticated = true
+    isAdmin = true
+    logger.Infof("Admin %s authenticated successfully", userId)
+  } else if password == "demo" {
+    isAuthenticated = true
+    isAdmin = false
+    logger.Infof("User %s authenticated successfully", userId)
+  }
 
   if isAuthenticated {
   	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-  			"admin": false,
+  			"admin": isAdmin,
   			"userId": userId,
   			"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
   	    "exp": time.Now().Add(time.Hour * 24).Unix(),
