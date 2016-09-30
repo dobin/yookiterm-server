@@ -5,7 +5,7 @@
 	"ContainerArch":32,
 	"ContainerAslr":"0",
 	"ContainerUser":"root",
-	"Title":"Writing a Buffer overflow Exploit - 32 bit",
+	"Title":"Writing a buffer overflow exploit - 32 bit",
 	"TextFilename": "challenge05.md",
 	"Text":"",
 	"NumberOfTerminals": 2,

@@ -1,0 +1,12 @@
+{
+	"Id":"20",
+	"ContainerBaseName":"hlUbuntu32",
+	"ContainerHostAlias": "ubuntunarm",
+	"ContainerArch":32,
+	"ContainerAslr":"1",
+	"ContainerUser":"root",
+	"Title":"ARM Buffer Overflow 32 bit",
+	"TextFilename": "challenge20.md",
+	"Text":"",
+	"NumberOfTerminals": 2
+}
