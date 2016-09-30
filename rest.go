@@ -11,13 +11,15 @@ import (
 type BaseContainer struct {
 	Id string
 	Name string
-	Arch string
+	Bits string
+
 }
 
 type ContainerHost struct {
 	HostnameAlias string
 	Hostname string
 	Aslr bool
+	Arch string
 }
 
 
