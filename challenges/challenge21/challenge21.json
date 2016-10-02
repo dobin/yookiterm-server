@@ -1,7 +1,7 @@
 {
 	"Id":"21",
 	"ContainerBaseName":"hlUbuntu64",
-	"ContainerHostAlias": "ubuntunarm",
+	"ContainerHostAlias": "ubuntuarm",
 	"ContainerArch":64,
 	"ContainerAslr":"1",
 	"ContainerUser":"root",
