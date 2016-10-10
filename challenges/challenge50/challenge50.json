@@ -1,0 +1,12 @@
+{
+	"Id":"50",
+	"ContainerBaseName":"hlUbuntu32",
+	"ContainerHostAlias": "ubuntunoaslr",
+	"ContainerAslr":"0",
+	"ContainerArch":32,
+	"ContainerUser":"root",
+	"Title":"GDB Introduction",
+	"TextFilename": "challenge50.md",
+	"Text":"",
+	"NumberOfTerminals": 2
+}

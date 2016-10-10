@@ -5,7 +5,7 @@
 	"ContainerArch":32,
 	"ContainerAslr":"1",
 	"ContainerUser":"root",
-	"Title":"ARM Buffer Overflow 32 bit",
+	"Title":"ARM 32 bit Intro",
 	"TextFilename": "challenge20.md",
 	"Text":"",
 	"NumberOfTerminals": 2
