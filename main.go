@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"math/rand"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/lxc/lxd"
@@ -34,7 +36,7 @@ var logger = loggo.GetLogger("project.main")
 
 
 func main() {
-//	rand.Seed(time.Now().UTC().UnixNano())
+	rand.Seed(time.Now().UTC().UnixNano() + 0xcafebabe)
 
 	var err error
 
