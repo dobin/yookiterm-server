@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"encoding/json"
+	"errors"
 )
 
 var challengeList []Challenge
@@ -15,13 +16,17 @@ var challengesDir = "./challenges"
 type Challenge struct {
 	Id string
 	ContainerBaseName string
-	ContainerArch int
-	ContainerAslr string
-	ContainerUser string
-	Title string
-	Text string
-	TextFilename string
 	ContainerHostAlias string
+
+	Title string
+	Description string
+
+	TextFilename string
+	Text string
+	Active bool
+
+	BaseContainer sBaseContainer
+	ContainerHost sContainerHost
 }
 
 
@@ -55,29 +60,37 @@ func loadChallenges() {
 			}
 			challenge.Text = string(markupFileContent)
 
-			//if config.ContainerDomain != "" {
-			//	challenge.ContainerHostFQDN = challenge.ContainerHost + "." + config.ContainerDomain
-			//}
+			challenge.BaseContainer = getBaseContainerByName(challenge.ContainerBaseName)
+			challenge.ContainerHost = getContainerHostByAlias(challenge.ContainerHostAlias)
 
-			challengeList = append(challengeList, challenge)
+			if challenge.Active {
+				challengeList = append(challengeList, challenge)
+			}
 		}
 	}
 }
 
 
 func getChallenges() []Challenge {
-	return challengeList
+	var strippedChallenges []Challenge
+
+	// Remove challenge texts
+	for _, element := range challengeList {
+		challenge := element // copy challenge
+		challenge.Text = "" // remove text of challenge
+		strippedChallenges = append(strippedChallenges, challenge)
+	}
+
+	return strippedChallenges
 }
 
 
-func getChallenge(challengeId string) Challenge {
-
+func getChallenge(challengeId string) (error, Challenge) {
 	for index, element := range challengeList {
 		if challengeList[index].Id == challengeId {
-			return element
+			return nil, element
 		}
 	}
 
-	// TODO FIXME ret error
-	return challengeList[0]
+	return errors.New("Challenge does not exist"), Challenge{}
 }

@@ -8,21 +8,6 @@ import (
 )
 
 
-type BaseContainer struct {
-	Id string
-	Name string
-	Bits string
-
-}
-
-type ContainerHost struct {
-	HostnameAlias string
-	Hostname string
-	Aslr bool
-	Arch string
-}
-
-
 var restBaseContainerListHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
@@ -68,9 +53,13 @@ var restChallengeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 
-	challenge := getChallenge(challengeId)
+	err, challenge := getChallenge(challengeId)
+	if err != nil {
+		http.Error(w, "Challenge not found", 404)
+		return
+	}
 
-	err := json.NewEncoder(w).Encode(challenge)
+	err = json.NewEncoder(w).Encode(challenge)
 	if err != nil {
 		http.Error(w, "Internal server error", 500)
 		return
