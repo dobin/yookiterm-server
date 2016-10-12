@@ -1,13 +1,11 @@
 {
-	"Id":"4",
+	"Id": "4",
 	"ContainerBaseName":"hlUbuntu64",
 	"ContainerHostAlias": "ubuntunoaslr",
-	"ContainerArch":64,
-	"ContainerAslr":"0",
-	"ContainerUser":"root",
+
 	"Title":"Shellcode Development Intro Lab - 64 bit",
+	"Description": "Create a basic running shellcode",
+
 	"TextFilename": "challenge04.md",
-	"Text":"",
-	"NumberOfTerminals": 2,
-	"HLCaseID": 123
+	"Active": false
 }

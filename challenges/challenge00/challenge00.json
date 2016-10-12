@@ -1,13 +1,11 @@
 {
-	"Id":"0",
-	"ContainerBaseName":"hlUbuntu32",
+	"Id": "0",
+	"ContainerBaseName": "hlUbuntu32",
 	"ContainerHostAlias": "ubuntuaslr",
-	"ContainerArch":32,
-	"ContainerAslr":"1",
-	"ContainerUser":"root",
-	"Title":"Memory regions intro",
+
+	"Title": "Introduction to memory regions",
+	"Description": "Analysis of an ELF binary",
+
 	"TextFilename": "challenge00.md",
-	"Text":"",
-	"NumberOfTerminals": 2,
-	"HLCaseID": 123
+	"Active": false
 }

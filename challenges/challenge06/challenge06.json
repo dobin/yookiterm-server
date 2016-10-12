@@ -1,13 +1,11 @@
 {
-	"Id":"6",
-	"ContainerBaseName":"hlUbuntu64",
+	"Id": "6",
+	"ContainerBaseName": "hlUbuntu64",
 	"ContainerHostAlias": "ubuntunoaslr",
-	"ContainerArch":64,
-	"ContainerAslr":"0",
-	"ContainerUser":"root",
-	"Title":"Writing a buffer overflow exploit - 64 bit",
+
+	"Title":"Writing a buffer overflow exploit",
+	"Description": "How to create a buffer overflow exploit in 64 bit",
+
 	"TextFilename": "challenge06.md",
-	"Text":"",
-	"NumberOfTerminals": 2,
-	"HLCaseID": 123
+	"Active": false
 }

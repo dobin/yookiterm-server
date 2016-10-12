@@ -1,12 +1,11 @@
 {
-	"Id":"20",
+	"Id": "20",
 	"ContainerBaseName":"hlUbuntu32",
 	"ContainerHostAlias": "ubuntuarm",
-	"ContainerArch":32,
-	"ContainerAslr":"1",
-	"ContainerUser":"root",
-	"Title":"ARM 32 bit Intro",
+
+	"Title": "Introduction to ARM",
+	"Description": "Basics of the ARM architecture",
+
 	"TextFilename": "challenge20.md",
-	"Text":"",
-	"NumberOfTerminals": 2
+	"Active": true
 }

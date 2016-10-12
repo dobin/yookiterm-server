@@ -1,12 +1,11 @@
 {
-	"Id":"21",
+	"Id": "21",
 	"ContainerBaseName":"hlUbuntu32",
 	"ContainerHostAlias": "ubuntuarm",
-	"ContainerArch":32,
-	"ContainerAslr":"1",
-	"ContainerUser":"root",
-	"Title":"ARM Buffer Overflow 32 bit",
+
+	"Title": "Introduction to develop an ARM buffer overflow",
+	"Description": "Create a simple buffer overflow on ARM",
+
 	"TextFilename": "challenge21.md",
-	"Text":"",
-	"NumberOfTerminals": 2
+	"Active": true
 }

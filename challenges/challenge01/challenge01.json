@@ -1,13 +1,11 @@
 {
-	"Id":"1",
-	"ContainerBaseName":"hlUbuntu32",
+	"Id": "1",
+	"ContainerBaseName": "hlUbuntu32",
 	"ContainerHostAlias": "ubuntuaslr",
-	"ContainerArch":32,
-	"ContainerAslr":"1",
-	"ContainerUser":"root",
-	"Title":"Static and dynamic analysis intro",
+
+	"Title": "Introduction to memory regions",
+	"Description": "Static and dynamic analysis of an ELF binary",
+
 	"TextFilename": "challenge01.md",
-	"Text":"",
-	"NumberOfTerminals": 2,
-	"HLCaseID": 123
+	"Active": true
 }
