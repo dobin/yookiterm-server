@@ -7,7 +7,6 @@ import (
 	"time"
 	"os"
 
-
 	"github.com/gorilla/mux"
 	"github.com/lxc/lxd"
 	"github.com/rs/cors"

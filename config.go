@@ -14,8 +14,9 @@ type serverConfig struct {
 	ServerAddr          string   				`yaml:"server_addr"`
 	ServerBannedIPs     []string 				`yaml:"server_banned_ips"`
 	Jwtsecret						string   				`yaml:"jwtsecret"`
+	server_domain				string					`yaml:"server_domain"`
 	ContainerHosts			[]sContainerHost	`yaml:"container_hosts"`
-	BaseContainers			[]sBaseContainer `yaml:"base_containers"`
+	BaseContainers			[]sBaseContainer	`yaml:"base_containers"`
 }
 
 
@@ -31,6 +32,7 @@ type sContainerHost struct {
 	Hostname string
 	Aslr bool
 	Arch string
+	SshBasePort int
 }
 
 
