@@ -1,37 +1,89 @@
-# Buffer Overflow Analysis Intro Lab
+# Introduction to memory layout advanced
 
-## source
+In this challenge, we have a program which prints the address of various variables
+to stdout. Using `readelf`, we will reverse in which ELF sections and segments
+these variables are stored.
 
-challenge1.c:
-```
+## Source
+
+File: `~/challenges/challenge1/challenge1.c`
+```c
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(int argc, char **argv) {
-    if (argc == 1) {
-        printf("Call: %s <name>\n", argv[0]);
-        exit(0);
-    }
+char globalVariable[] = "GlobalVar";
+const char globalStaticVariable[] = "GlobalStaticVar";
 
-    printf("Hello %s\n", argv[1]);
+int main(int argc, char **argv) {
+	char *localStackVar = "StackVar";
+	char *heapVar = malloc(16);
+
+	printf("Global variable:        0x%p\n", globalVariable);
+	printf("Global static variable: 0x%p\n", globalStaticVariable);
+	printf("Stack variable:         0x%p\n", localStackVar);
+	printf("Heap variable:          0x%p\n", heapVar);
 }
 ```
+
 You can compile it by calling `make` in the folder `~/challenges/challenge1`
 
+## Output
 
-## file command
+If we execute the program, we get the following output:
 
+```sh
+root@hlUbuntu32:~/challenges/challenge1# ./challenge1
+Global variable:        0x0x804a020
+Global static variable: 0x0x8048540
+Stack variable:         0x0x8048550
+Heap variable:          0x0x8960008
 ```
-~/challenges/challenge1# file challenge1          
-challenge1: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=a8dae60baebe49945ea443d4cc4198b946da27fc, not stripped
-```
 
 
-## readelf command
+## Analysis
 
-Type `readelf -l challenge1`
-```
-~/challenges/challenge1# readelf -l ./challenge1
+Lets print all sections and segments of the ELF binary:
+```sh
+root@hlUbuntu32:~/challenges/challenge1# readelf -l -S challenge0
+There are 31 section headers, starting at offset 0x1854:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .interp           PROGBITS        08048154 000154 000013 00   A  0   0  1
+  [ 2] .note.ABI-tag     NOTE            08048168 000168 000020 00   A  0   0  4
+  [ 3] .note.gnu.build-i NOTE            08048188 000188 000024 00   A  0   0  4
+  [ 4] .gnu.hash         GNU_HASH        080481ac 0001ac 000020 04   A  5   0  4
+  [ 5] .dynsym           DYNSYM          080481cc 0001cc 000060 10   A  6   1  4
+  [ 6] .dynstr           STRTAB          0804822c 00022c 000053 00   A  0   0  1
+  [ 7] .gnu.version      VERSYM          08048280 000280 00000c 02   A  5   0  2
+  [ 8] .gnu.version_r    VERNEED         0804828c 00028c 000020 00   A  6   1  4
+  [ 9] .rel.dyn          REL             080482ac 0002ac 000008 08   A  5   0  4
+  [10] .rel.plt          REL             080482b4 0002b4 000018 08  AI  5  24  4
+  [11] .init             PROGBITS        080482cc 0002cc 000023 00  AX  0   0  4
+  [12] .plt              PROGBITS        080482f0 0002f0 000040 04  AX  0   0 16
+  [13] .plt.got          PROGBITS        08048330 000330 000008 00  AX  0   0  8
+  [14] .text             PROGBITS        08048340 000340 0001e2 00  AX  0   0 16
+  [15] .fini             PROGBITS        08048524 000524 000014 00  AX  0   0  4
+  [16] .rodata           PROGBITS        08048538 000538 000099 00   A  0   0  4
+  [17] .eh_frame_hdr     PROGBITS        080485d4 0005d4 00002c 00   A  0   0  4
+  [18] .eh_frame         PROGBITS        08048600 000600 0000cc 00   A  0   0  4
+  [19] .init_array       INIT_ARRAY      08049f08 000f08 000004 00  WA  0   0  4
+  [20] .fini_array       FINI_ARRAY      08049f0c 000f0c 000004 00  WA  0   0  4
+  [21] .jcr              PROGBITS        08049f10 000f10 000004 00  WA  0   0  4
+  [22] .dynamic          DYNAMIC         08049f14 000f14 0000e8 08  WA  6   0  4
+  [23] .got              PROGBITS        08049ffc 000ffc 000004 04  WA  0   0  4
+  [24] .got.plt          PROGBITS        0804a000 001000 000018 04  WA  0   0  4
+  [25] .data             PROGBITS        0804a018 001018 000012 00  WA  0   0  4
+  [26] .bss              NOBITS          0804a02a 00102a 000002 00  WA  0   0  1
+  [27] .comment          PROGBITS        00000000 00102a 000034 01  MS  0   0  1
+  [28] .shstrtab         STRTAB          00000000 00174a 00010a 00      0   0  1
+  [29] .symtab           SYMTAB          00000000 001060 000480 10     30  47  4
+  [30] .strtab           STRTAB          00000000 0014e0 00026a 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
 
 Elf file type is EXEC (Executable file)
 Entry point 0x8048340
@@ -42,248 +94,51 @@ Program Headers:
   PHDR           0x000034 0x08048034 0x08048034 0x00120 0x00120 R E 0x4
   INTERP         0x000154 0x08048154 0x08048154 0x00013 0x00013 R   0x1
       [Requesting program interpreter: /lib/ld-linux.so.2]
-  LOAD           0x000000 0x08048000 0x08048000 0x00634 0x00634 R E 0x1000
+  LOAD           0x000000 0x08048000 0x08048000 0x006cc 0x006cc R E 0x1000
   LOAD           0x000f08 0x08049f08 0x08049f08 0x00122 0x00124 RW  0x1000
   DYNAMIC        0x000f14 0x08049f14 0x08049f14 0x000e8 0x000e8 RW  0x4
   NOTE           0x000168 0x08048168 0x08048168 0x00044 0x00044 R   0x4
-  GNU_EH_FRAME   0x00053c 0x0804853c 0x0804853c 0x0002c 0x0002c R   0x4
+  GNU_EH_FRAME   0x0005d4 0x080485d4 0x080485d4 0x0002c 0x0002c R   0x4
   GNU_STACK      0x000000 0x00000000 0x00000000 0x00000 0x00000 RW  0x10
   GNU_RELRO      0x000f08 0x08049f08 0x08049f08 0x000f8 0x000f8 R   0x1
 
  Section to Segment mapping:
   Segment Sections...
-   00     
+   00
    01     .interp
    02     .interp .note.ABI-tag .note.gnu.build-id .gnu.hash .dynsym .dynstr .gnu.version .gnu.version_r .rel.dyn .rel.plt .init .plt .plt.got .text .fini .rodata .eh_frame_hdr .eh_frame
    03     .init_array .fini_array .jcr .dynamic .got .got.plt .data .bss
    04     .dynamic
    05     .note.ABI-tag .note.gnu.build-id
    06     .eh_frame_hdr
-   07     
+   07
    08     .init_array .fini_array .jcr .dynamic .got
 ```
 
-## objdump command
+### Analyze the Global variable
 
-Try `objdump`
-```
-~/challenges/challenge1# objdump -d challenge1
-challenge1:     file format elf32-i386
+The address of the global variable is `0x804a020`. If we check the section
+headers at the column "Addr", we'll see that this variable is located in the
+section with the name `.data` with number 25, which starts at `0x804a018`. `.data` contains
+static initialized data and is writeable.
 
-Disassembly of section .init:
+The file offset of `.data` is "0x1018". We can dump it with a tool like `hexdump`, by
+using the `s` parameter to skip the same amount of bytes as the offset specifies:
 
-080482cc <_init>:
- 80482cc:       53                      push   %ebx
- 80482cd:       83 ec 08                sub    $0x8,%esp
- 80482d0:       e8 9b 00 00 00          call   8048370 <__x86.get_pc_thunk.bx>
- 80482d5:       81 c3 2b 1d 00 00       add    $0x1d2b,%ebx
- 80482db:       8b 83 fc ff ff ff       mov    -0x4(%ebx),%eax
- 80482e1:       85 c0                   test   %eax,%eax
- 80482e3:       74 05                   je     80482ea <_init+0x1e>
- 80482e5:       e8 46 00 00 00          call   8048330 <__libc_start_main@plt+0x10>
- 80482ea:       83 c4 08                add    $0x8,%esp
- 80482ed:       5b                      pop    %ebx
- 80482ee:       c3                      ret    
-
-Disassembly of section .plt:
-
-080482f0 <printf@plt-0x10>:
- 80482f0:       ff 35 04 a0 04 08       pushl  0x804a004
- 80482f6:       ff 25 08 a0 04 08       jmp    *0x804a008
- 80482fc:       00 00                   add    %al,(%eax)
-        ...
-
-08048300 <printf@plt>:
- 8048300:       ff 25 0c a0 04 08       jmp    *0x804a00c
- 8048306:       68 00 00 00 00          push   $0x0
- 804830b:       e9 e0 ff ff ff          jmp    80482f0 <_init+0x24>
-
-08048310 <exit@plt>:
- 8048310:       ff 25 10 a0 04 08       jmp    *0x804a010
- 8048316:       68 08 00 00 00          push   $0x8
- 804831b:       e9 d0 ff ff ff          jmp    80482f0 <_init+0x24>
-
-08048320 <__libc_start_main@plt>:
- 8048320:       ff 25 14 a0 04 08       jmp    *0x804a014
- 8048326:       68 10 00 00 00          push   $0x10
- 804832b:       e9 c0 ff ff ff          jmp    80482f0 <_init+0x24>
-
-Disassembly of section .plt.got:
-
-08048330 <.plt.got>:
- 8048330:       ff 25 fc 9f 04 08       jmp    *0x8049ffc
- 8048336:       66 90                   xchg   %ax,%ax
-
- Disassembly of section .text:
-
- 08048340 <_start>:
-  8048340:       31 ed                   xor    %ebp,%ebp
-  8048342:       5e                      pop    %esi
-  8048343:       89 e1                   mov    %esp,%ecx
-  8048345:       83 e4 f0                and    $0xfffffff0,%esp
-  8048348:       50                      push   %eax
-  8048349:       54                      push   %esp
-  804834a:       52                      push   %edx
-  804834b:       68 00 85 04 08          push   $0x8048500
-  8048350:       68 a0 84 04 08          push   $0x80484a0
-  8048355:       51                      push   %ecx
-  8048356:       56                      push   %esi
-  8048357:       68 3b 84 04 08          push   $0x804843b
-  804835c:       e8 bf ff ff ff          call   8048320 <__libc_start_main@plt>
-  8048361:       f4                      hlt    
-  8048362:       66 90                   xchg   %ax,%ax
-  8048364:       66 90                   xchg   %ax,%ax
-  8048366:       66 90                   xchg   %ax,%ax
-  8048368:       66 90                   xchg   %ax,%ax
-  804836a:       66 90                   xchg   %ax,%ax
-  804836c:       66 90                   xchg   %ax,%ax
-  804836e:       66 90                   xchg   %ax,%ax
-
-[...]
-
-0804843b <main>:
- 804843b:       8d 4c 24 04             lea    0x4(%esp),%ecx
- 804843f:       83 e4 f0                and    $0xfffffff0,%esp
- 8048442:       ff 71 fc                pushl  -0x4(%ecx)
- 8048445:       55                      push   %ebp
- 8048446:       89 e5                   mov    %esp,%ebp
- 8048448:       51                      push   %ecx
- 8048449:       83 ec 04                sub    $0x4,%esp
- 804844c:       89 c8                   mov    %ecx,%eax
- 804844e:       83 38 01                cmpl   $0x1,(%eax)
- 8048451:       75 20                   jne    8048473 <main+0x38>
- 8048453:       8b 40 04                mov    0x4(%eax),%eax
- 8048456:       8b 00                   mov    (%eax),%eax
- 8048458:       83 ec 08                sub    $0x8,%esp
- 804845b:       50                      push   %eax
- 804845c:       68 20 85 04 08          push   $0x8048520
- 8048461:       e8 9a fe ff ff          call   8048300 <printf@plt>
- 8048466:       83 c4 10                add    $0x10,%esp
- 8048469:       83 ec 0c                sub    $0xc,%esp
- 804846c:       6a 00                   push   $0x0
- 804846e:       e8 9d fe ff ff          call   8048310 <exit@plt>
- 8048473:       8b 40 04                mov    0x4(%eax),%eax
- 8048476:       83 c0 04                add    $0x4,%eax
- 8048479:       8b 00                   mov    (%eax),%eax
- 804847b:       83 ec 08                sub    $0x8,%esp
- 804847e:       50                      push   %eax
- 804847f:       68 31 85 04 08          push   $0x8048531
- 8048484:       e8 77 fe ff ff          call   8048300 <printf@plt>
- 8048489:       83 c4 10                add    $0x10,%esp
- 804848c:       b8 00 00 00 00          mov    $0x0,%eax
- 8048491:       8b 4d fc                mov    -0x4(%ebp),%ecx
- 8048494:       c9                      leave  
- 8048495:       8d 61 fc                lea    -0x4(%ecx),%esp
- 8048498:       c3                      ret    
- 8048499:       66 90                   xchg   %ax,%ax
- 804849b:       66 90                   xchg   %ax,%ax
- 804849d:       66 90                   xchg   %ax,%ax
- 804849f:       90                      nop
-
-[...]
+```sh
+root@hlUbuntu32:~/challenges/challenge1# hexdump -C -s 0x1018 -n 32 challenge1
+00001018  00 00 00 00 00 00 00 00  47 6c 6f 62 61 6c 56 61  |........GlobalVa|
+00001028  72 00 47 43 43 3a 20 28  55 62 75 6e 74 75 20 35  |r.GCC: (Ubuntu 5|
 ```
 
+As we can see, the content of the C variable "globalVariable" is written in
+the ELF binary: "GlobalVar".
 
-## gdb command
 
-Let's debug the binary using gdb
 
-```
-~/challenges/challenge1# gdb -q ./challenge1
-Reading symbols from ./challenge1...(no debugging symbols found)...done.
-gdb-peda$ run test
-Starting program: /root/challenges/challenge1/challenge1 test
-Hello test
-```
+## Questions
 
-Now let's disassemble main
-```
-gdb-peda$ disass main
-Dump of assembler code for function main:
-   0x0804843b <+0>:     lea    ecx,[esp+0x4]
-   0x0804843f <+4>:     and    esp,0xfffffff0
-   0x08048442 <+7>:     push   DWORD PTR [ecx-0x4]
-   0x08048445 <+10>:    push   ebp
-   0x08048446 <+11>:    mov    ebp,esp
-   0x08048448 <+13>:    push   ecx
-   0x08048449 <+14>:    sub    esp,0x4
-   0x0804844c <+17>:    mov    eax,ecx
-   0x0804844e <+19>:    cmp    DWORD PTR [eax],0x1
-   0x08048451 <+22>:    jne    0x8048473 <main+56>
-   0x08048453 <+24>:    mov    eax,DWORD PTR [eax+0x4]
-   0x08048456 <+27>:    mov    eax,DWORD PTR [eax]
-   0x08048458 <+29>:    sub    esp,0x8
-   0x0804845b <+32>:    push   eax
-   0x0804845c <+33>:    push   0x8048520
-   0x08048461 <+38>:    call   0x8048300 <printf@plt>
-   0x08048466 <+43>:    add    esp,0x10
-   0x08048469 <+46>:    sub    esp,0xc
-   0x0804846c <+49>:    push   0x0
-   0x0804846e <+51>:    call   0x8048310 <exit@plt>
-   0x08048473 <+56>:    mov    eax,DWORD PTR [eax+0x4]
-   0x08048476 <+59>:    add    eax,0x4
-   0x08048479 <+62>:    mov    eax,DWORD PTR [eax]
-   0x0804847b <+64>:    sub    esp,0x8
-   0x0804847e <+67>:    push   eax
-   0x0804847f <+68>:    push   0x8048531
-   0x08048484 <+73>:    call   0x8048300 <printf@plt>
-   0x08048489 <+78>:    add    esp,0x10
-   0x0804848c <+81>:    mov    eax,0x0
-   0x08048491 <+86>:    mov    ecx,DWORD PTR [ebp-0x4]
-   0x08048494 <+89>:    leave  
-   0x08048495 <+90>:    lea    esp,[ecx-0x4]
-   0x08048498 <+93>:    ret    
-End of assembler dump.
-```
-
-```
-gdb-peda$ break *0x08048484
-Breakpoint 1 at 0x8048484
-gdb-peda$ run test
-[----------------------------------registers-----------------------------------]
-EAX: 0xffffd939 ("test")
-EBX: 0x0
-ECX: 0xffffd770 --> 0x2
-EDX: 0xffffd794 --> 0x0
-ESI: 0xf7fcb000 --> 0x1b1db0
-EDI: 0xf7fcb000 --> 0x1b1db0
-EBP: 0xffffd758 --> 0x0
-ESP: 0xffffd740 --> 0x8048531 ("Hello %s\n")
-EIP: 0x8048484 (<main+73>:      call   0x8048300 <printf@plt>)
-EFLAGS: 0x296 (carry PARITY ADJUST zero SIGN trap INTERRUPT direction overflow)
-[-------------------------------------code-------------------------------------]
-  0x804847b <main+64>: sub    esp,0x8
-  0x804847e <main+67>: push   eax
-  0x804847f <main+68>: push   0x8048531
-=> 0x8048484 <main+73>: call   0x8048300 <printf@plt>
-  0x8048489 <main+78>: add    esp,0x10
-  0x804848c <main+81>: mov    eax,0x0
-  0x8048491 <main+86>: mov    ecx,DWORD PTR [ebp-0x4]
-  0x8048494 <main+89>: leave
-Guessed arguments:
-arg[0]: 0x8048531 ("Hello %s\n")
-arg[1]: 0xffffd939 ("test")
-[------------------------------------stack-------------------------------------]
-0000| 0xffffd740 --> 0x8048531 ("Hello %s\n")
-0004| 0xffffd744 --> 0xffffd939 ("test")
-0008| 0xffffd748 --> 0xffffd810 --> 0xffffd93e ("LESSOPEN=| /usr/bin/lesspipe %s")
-0012| 0xffffd74c --> 0x80484c1 (<__libc_csu_init+33>:   lea    eax,[ebx-0xf8])
-0016| 0xffffd750 --> 0xf7fcb3dc --> 0xf7fcc1e0 --> 0x0
-0020| 0xffffd754 --> 0xffffd770 --> 0x2
-0024| 0xffffd758 --> 0x0
-0028| 0xffffd75c --> 0xf7e31637 (<__libc_start_main+247>:       add    esp,0x10)
-[------------------------------------------------------------------------------]
-Legend: code, data, rodata, value
-
-Breakpoint 1, 0x08048484 in main ()
-gdb-peda$ continue
-Continuing.
-Hello test
-gdb-peda$
-```
-
-## Security Questions
-
-- Explain how you create a breakpoint in gdb at the main routine
-- Explain how you disclose the ESP at a given breakpoint
-- Explain how to continue debugging after you have seen the details of a breakpoint
+* In which section and segment is the variable `globalStaticVariable` stored?
+* In which section and segment is the variable `heapVar` stored?
+* In which section and segment is the variable `localStackVar` stored?
+* Can you locate the content of the variables in the ELF binary? If not, why not?
