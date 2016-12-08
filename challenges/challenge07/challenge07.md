@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 }
 ```
 
-You can compile it by calling `make` in the folder `~/challenges/challenge7`
+You can compile it by calling `make` in the folder `~/challenges/challenge07`
 
 
 ## Analysis

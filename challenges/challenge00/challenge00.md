@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     printf("Hello %s\n", argv[1]);
 }
 ```
-You can compile it by calling `make` in the folder `~/challenges/challenge0`
+You can compile it by calling `make` in the folder `~/challenges/challenge00`
 
 
 ## Static analysis
