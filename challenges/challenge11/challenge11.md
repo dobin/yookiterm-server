@@ -78,7 +78,7 @@ Find address of buffer using GDB
 
 Check disassembly of handleData in 64 bit binary:
 ```
-root@hlUbuntu32aslr:~/challenges/challenge5# gdb -q vulnerable
+root@hlUbuntu32aslr:~/challenges/challenge11# gdb -q vulnerable
 Reading symbols from vulnerable...(no debugging symbols found)...done.
 gdb-peda$ disas handleData
 Dump of assembler code for function handleData:

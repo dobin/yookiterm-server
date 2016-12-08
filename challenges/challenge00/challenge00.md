@@ -6,7 +6,7 @@ about the used memory regions in a program or a process.
 
 ## Source
 
-File: `~/challenges/challenge0/challenge0.c`
+File: `~/challenges/challenge00/challenge0.c`
 ```c
 #include <stdio.h>
 #include <stdlib.h>
@@ -211,7 +211,7 @@ Let's debug the binary using gdb
 ~/challenges/challenge0# gdb -q ./challenge0
 Reading symbols from ./challenge0...(no debugging symbols found)...done.
 gdb-peda$ run test
-Starting program: /root/challenges/challenge0/challenge0 test
+Starting program: /root/challenges/challenge00/challenge0 test
 Hello test
 ```
 
@@ -261,7 +261,7 @@ breakpoint on the `main` function, and start the program with `run`
 gdb-peda$ b *main
 Breakpoint 1 at 0x804843b
 gdb-peda$ run
-Starting program: /root/challenges/challenge0/challenge0
+Starting program: /root/challenges/challenge00/challenge0
 
  [----------------------------------registers-----------------------------------]
 EAX: 0xf7fccddc --> 0xffffd71c --> 0xffffd866 ("TERM=xterm")
@@ -286,7 +286,7 @@ EFLAGS: 0x292 (carry parity ADJUST zero SIGN trap INTERRUPT direction overflow)
 [------------------------------------stack-------------------------------------]
 0000| 0xffffd67c --> 0xf7e31637 (<__libc_start_main+247>:       add    esp,0x10)
 0004| 0xffffd680 --> 0x1
-0008| 0xffffd684 --> 0xffffd714 --> 0xffffd83f ("/root/challenges/challenge0/challenge0")
+0008| 0xffffd684 --> 0xffffd714 --> 0xffffd83f ("/root/challenges/challenge00/challenge0")
 0012| 0xffffd688 --> 0xffffd71c --> 0xffffd866 ("TERM=xterm")
 0016| 0xffffd68c --> 0x0
 0020| 0xffffd690 --> 0x0
@@ -306,9 +306,9 @@ process 394
 Mapped address spaces:
 
         Start Addr   End Addr       Size     Offset objfile
-         0x8048000  0x8049000     0x1000        0x0 /root/challenges/challenge0/challenge0
-         0x8049000  0x804a000     0x1000        0x0 /root/challenges/challenge0/challenge0
-         0x804a000  0x804b000     0x1000     0x1000 /root/challenges/challenge0/challenge0
+         0x8048000  0x8049000     0x1000        0x0 /root/challenges/challenge00/challenge0
+         0x8049000  0x804a000     0x1000        0x0 /root/challenges/challenge00/challenge0
+         0x804a000  0x804b000     0x1000     0x1000 /root/challenges/challenge00/challenge0
         0xf7e19000 0xf7fc8000   0x1af000        0x0 /lib/i386-linux-gnu/libc-2.23.so
         0xf7fc8000 0xf7fc9000     0x1000   0x1af000 /lib/i386-linux-gnu/libc-2.23.so
         0xf7fc9000 0xf7fcb000     0x2000   0x1af000 /lib/i386-linux-gnu/libc-2.23.so
@@ -332,9 +332,9 @@ a second terminal.
 
 ```sh
 gdb-peda$ ! cat /proc/394/maps
-08048000-08049000 r-xp 00000000 00:2d 32791          /root/challenges/challenge0/challenge0
-08049000-0804a000 r--p 00000000 00:2d 32791          /root/challenges/challenge0/challenge0
-0804a000-0804b000 rw-p 00001000 00:2d 32791          /root/challenges/challenge0/challenge0
+08048000-08049000 r-xp 00000000 00:2d 32791          /root/challenges/challenge00/challenge0
+08049000-0804a000 r--p 00000000 00:2d 32791          /root/challenges/challenge00/challenge0
+0804a000-0804b000 rw-p 00001000 00:2d 32791          /root/challenges/challenge00/challenge0
 f7e19000-f7fc8000 r-xp 00000000 00:2d 14339          /lib/i386-linux-gnu/libc-2.23.so
 f7fc8000-f7fc9000 ---p 001af000 00:2d 14339          /lib/i386-linux-gnu/libc-2.23.so
 f7fc9000-f7fcb000 r--p 001af000 00:2d 14339          /lib/i386-linux-gnu/libc-2.23.so

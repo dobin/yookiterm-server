@@ -6,7 +6,7 @@ these variables are stored.
 
 ## Source
 
-File: `~/challenges/challenge1/challenge1.c`
+File: `~/challenges/challenge01/challenge1.c`
 ```c
 #include <stdio.h>
 #include <stdlib.h>

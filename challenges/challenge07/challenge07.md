@@ -5,7 +5,7 @@ contains different functions with different parameters.
 
 ## source
 
-File: `~/challenges/challenge7/challenge7.c`
+File: `~/challenges/challenge07/challenge7.c`
 ```c
 #include <stdio.h>
 #include <stdlib.h>
