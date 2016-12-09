@@ -6,9 +6,9 @@
 
 ## Preparation
 
+File: `~/challenges/challenge12/challenge12.c`
 
 ```
-$ cat vulnerable.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <crypt.h>
@@ -57,13 +57,8 @@ int main(int argc, char **argv) {
 }
 ```
 
-How to compile:
+You can compile it by calling `make` in the folder `~/challenges/challenge12`
 
-```
-gcc -m32 -z execstack -fno-stack-protector vulnerable.c -o vulnerable -lcrypt
-```
-
-or `make vulnerable`
 
 ## Analysis
 

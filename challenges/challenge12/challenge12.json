@@ -3,9 +3,9 @@
 	"ContainerBaseName": "hlUbuntu64",
 	"ContainerHostAlias": "ubuntunoaslr",
 
-	"Title":"Writing a buffer overflow exploit",
-	"Description": "How to create a buffer overflow exploit in 64 bit",
+	"Title":"Development of a buffer overflow exploit - 64 bit",
+	"Description": "How to create a simple buffer overflow exploit",
 
 	"TextFilename": "challenge12.md",
-	"Active": false
+	"Active": true
 }
