@@ -3,7 +3,7 @@
 ## file
 
 challenge21.c:
-```
+```c
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,11 +22,10 @@ void main(int argc, char **argv) {
     vulnerable(argv[1]);
     return(0);
 }
-
 ```
 
 Compile it:
-```
+```sh
 gcc -ggdb challenge21.c -o challenge21 -fno-stack-protector
 ```
 
@@ -34,7 +33,7 @@ gcc -ggdb challenge21.c -o challenge21 -fno-stack-protector
 ## Info gathering
 
 Lets check the main function:
-```
+```sh
 $ gdb challenge21
 
 (gdb) disas main

