@@ -57,11 +57,11 @@ func run() error {
 	r.Handle("/1.0/authTest", jwtMiddleware.Handler(authTest))
 
 	r.Handle("/1.0/containerHosts", jwtMiddleware.Handler(restContainerHostListHandler))
-
 	r.Handle("/1.0/baseContainers", jwtMiddleware.Handler(restBaseContainerListHandler))
 
-	r.Handle("/1.0/challenges", jwtMiddleware.Handler(restChallengeListHandler))
-	r.Handle("/1.0/challenge/{challengeId}", jwtMiddleware.Handler(restChallengeHandler))
+	// Challenges are public
+	r.Handle("/1.0/challenges", restChallengeListHandler)
+	r.Handle("/1.0/challenge/{challengeId}", restChallengeHandler)
 	//r.HandleFunc("/1.0/challenge/<challenge>/file", restBaseContainerListHandler)
 
 	c := cors.New(cors.Options{
@@ -72,7 +72,7 @@ func run() error {
 	})
 	handler := c.Handler(r)
 
-	fmt.Println("Yookiterm server 0.2");
+	fmt.Println("Yookiterm server");
 	fmt.Println("Listening on: ", config.ServerAddr)
 
 	err = http.ListenAndServe(config.ServerAddr, handler)
