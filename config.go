@@ -15,6 +15,7 @@ type serverConfig struct {
 	ServerBannedIPs     []string 				`yaml:"server_banned_ips"`
 	Jwtsecret						string   				`yaml:"jwtsecret"`
 	server_domain				string					`yaml:"server_domain"`
+	ChallengesDir				string					`yaml:"challenges_dir"`
 	ContainerHosts			[]sContainerHost	`yaml:"container_hosts"`
 	BaseContainers			[]sBaseContainer	`yaml:"base_containers"`
 }

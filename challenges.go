@@ -10,9 +10,6 @@ import (
 
 var challengeList []Challenge
 
-var challengesDir = "./challenges"
-
-
 type Challenge struct {
 	Id string
 	ContainerBaseName string
@@ -33,6 +30,7 @@ type Challenge struct {
 // Load all challenges from the challenge directory
 func loadChallenges() {
 	fmt.Println("Loading challenges")
+	challengesDir := config.ChallengesDir
 
 	// read all directories in challenges directory
 	// ./challenges/*
