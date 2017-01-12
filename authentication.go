@@ -10,11 +10,29 @@ import(
 )
 
 
+var HlSsoHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+    var token = r.FormValue("hlssotoken")
+    isAuthenticated := false
+
+    userId, err := getUsername(token)
+    if err == nil {
+        isAuthenticated = true
+    }
+    isAdmin := false
+
+    body := userAuthToken(isAuthenticated, isAdmin, userId)
+
+    err = json.NewEncoder(w).Encode(body)
+    if err != nil {
+    	http.Error(w, "Internal server error", 500)
+    	return
+    }
+})
+
+
 var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
-
-	body := make(map[string]interface{})
 
   var userId string
   var password string
@@ -48,22 +66,7 @@ var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
     logger.Infof("User %s authenticated successfully", userId)
   }
 
-  if isAuthenticated {
-  	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-  			"admin": isAdmin,
-  			"userId": userId,
-  			"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
-  	    "exp": time.Now().Add(time.Hour * 24).Unix(),
-  	})
-
-  	tokenString, _ := token.SignedString([]byte(config.Jwtsecret))
-
-  	body["token"] = tokenString
-    body["authenticated"] = true
-  } else {
-    body["token"] = ""
-    body["authenticated"] = false
-  }
+    body := userAuthToken(isAuthenticated, isAdmin, userId)
 
 	err = json.NewEncoder(w).Encode(body)
 	if err != nil {
@@ -71,6 +74,30 @@ var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 		return
 	}
 })
+
+
+func userAuthToken(isAuthenticated bool, isAdmin bool, userId string) map[string]interface{} {
+    body := make(map[string]interface{})
+
+    if isAuthenticated {
+    	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+    			"admin": isAdmin,
+    			"userId": userId,
+    			"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+    	    "exp": time.Now().Add(time.Hour * 24).Unix(),
+    	})
+
+    	tokenString, _ := token.SignedString([]byte(config.Jwtsecret))
+
+    	body["token"] = tokenString
+      body["authenticated"] = true
+    } else {
+      body["token"] = ""
+      body["authenticated"] = false
+    }
+
+    return body
+}
 
 
 var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{

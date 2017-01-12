@@ -53,6 +53,7 @@ func run() error {
 	r := mux.NewRouter()
 
 	// Authentication
+	r.Handle("/1.0/hl-sso-auth", HlSsoHandler)
 	r.Handle("/1.0/get-token", GetTokenHandler)
 	r.Handle("/1.0/authTest", jwtMiddleware.Handler(authTest))
 
