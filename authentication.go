@@ -17,15 +17,24 @@ var HlSsoHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request)
     userId, err := getUsername(token)
     if err == nil {
         isAuthenticated = true
+    } else {
+        isAuthenticated = false;
     }
     isAdmin := false
 
-    body := userAuthToken(isAuthenticated, isAdmin, userId)
+    logger.Infof("HL username: %s", userId)
 
-    err = json.NewEncoder(w).Encode(body)
-    if err != nil {
-    	http.Error(w, "Internal server error", 500)
-    	return
+    if isAuthenticated {
+        token := userAuthToken(isAdmin, userId)
+        t := "token=" + token + "; Path=/;"
+        logger.Infof("Token: %s", t)
+        w.Header().Set("Set-Cookie", t)
+
+        http.Redirect(w, r, "//", http.StatusSeeOther)
+        return
+    } else {
+        http.Redirect(w, r, "//", http.StatusSeeOther)
+        return
     }
 })
 
@@ -66,37 +75,39 @@ var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
     logger.Infof("User %s authenticated successfully", userId)
   }
 
-    body := userAuthToken(isAuthenticated, isAdmin, userId)
+  token := userAuthToken(isAdmin, userId)
+  body := make(map[string]interface{})
+      body["token"] = token
 
-	err = json.NewEncoder(w).Encode(body)
-	if err != nil {
-		http.Error(w, "Internal server error", 500)
-		return
-	}
+      if isAuthenticated {
+      body["token"] = token
+    body["authenticated"] = true
+  } else {
+    body["token"] = ""
+    body["authenticated"] = false
+  }
+
+      err = json.NewEncoder(w).Encode(body)
+      if err != nil {
+              http.Error(w, "Internal server error", 500)
+              return
+      }
 })
 
 
-func userAuthToken(isAuthenticated bool, isAdmin bool, userId string) map[string]interface{} {
-    body := make(map[string]interface{})
+func userAuthToken(isAdmin bool, userId string) string {
 
-    if isAuthenticated {
-    	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-    			"admin": isAdmin,
-    			"userId": userId,
-    			"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
-    	    "exp": time.Now().Add(time.Hour * 24).Unix(),
-    	})
+        token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+                        "admin": isAdmin,
+                        "userId": userId,
+                        "nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+            "exp": time.Now().Add(time.Hour * 24).Unix(),
+        })
 
-    	tokenString, _ := token.SignedString([]byte(config.Jwtsecret))
+        tokenString, _ := token.SignedString([]byte(config.Jwtsecret))
 
-    	body["token"] = tokenString
-      body["authenticated"] = true
-    } else {
-      body["token"] = ""
-      body["authenticated"] = false
-    }
 
-    return body
+    return tokenString
 }
 
 

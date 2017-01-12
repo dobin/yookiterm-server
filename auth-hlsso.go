@@ -13,6 +13,7 @@ import (
 		"encoding/base64"
 		"errors"
 		"encoding/json"
+		"encoding/hex"
 )
 
 
@@ -117,6 +118,17 @@ func parseOuterToken(header string) ([]byte, error) {
 }
 
 
+func hex2bin(input string) ([]byte, error) {
+        o := make([]byte, hex.DecodedLen(len(input)))
+        _, err := hex.Decode(o, []byte(input))
+        if err != nil {
+                return []byte{}, err
+        }
+
+        return o, nil
+}
+
+
 
 func validateSignature(decryptedString string, publicKey *rsa.PublicKey) (bool, string, error) {
 	parts := strings.Split(decryptedString, "::")
@@ -125,7 +137,7 @@ func validateSignature(decryptedString string, publicKey *rsa.PublicKey) (bool, 
 	}
 
 	jsonStr := parts[0]
-	signature, err := base64.StdEncoding.DecodeString(parts[1])
+	signature, err := hex2bin(parts[1])
 	if err != nil {
 		return false, jsonStr, err
 	}
