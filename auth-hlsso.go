@@ -200,8 +200,7 @@ func getUsername(token string) (string, error) {
 
 	validSignature, jsonStr, err := validateSignature(decryptedString, hlPublicKey)
 	if validSignature == false || err != nil {
-		// yes
-		//	return "", err
+		return "", err
 	}
 
 	username, err := getData(jsonStr)
