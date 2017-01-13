@@ -2,11 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"net/http"
 	"github.com/gorilla/mux"
-//	"fmt"
+	"net/http"
 )
-
 
 var restBaseContainerListHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -19,7 +17,6 @@ var restBaseContainerListHandler = http.HandlerFunc(func(w http.ResponseWriter, 
 	}
 })
 
-
 var restContainerHostListHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
@@ -30,7 +27,6 @@ var restContainerHostListHandler = http.HandlerFunc(func(w http.ResponseWriter, 
 		return
 	}
 })
-
 
 var restChallengeListHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	var challengeList = getChallenges()
@@ -44,7 +40,6 @@ var restChallengeListHandler = http.HandlerFunc(func(w http.ResponseWriter, r *h
 		return
 	}
 })
-
 
 var restChallengeHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

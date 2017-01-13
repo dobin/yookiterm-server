@@ -18,6 +18,8 @@ type serverConfig struct {
 	ChallengesDir				string					`yaml:"challenges_dir"`
 	ContainerHosts			[]sContainerHost	`yaml:"container_hosts"`
 	BaseContainers			[]sBaseContainer	`yaml:"base_containers"`
+	AdminPassword			string	`yaml:"admin_password"`
+	UserPassword			string	`yaml:"user_password"`
 }
 
 

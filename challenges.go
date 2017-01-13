@@ -1,31 +1,30 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"encoding/json"
-	"errors"
 )
 
 var challengeList []Challenge
 
 type Challenge struct {
-	Id string
-	ContainerBaseName string
+	Id                 string
+	ContainerBaseName  string
 	ContainerHostAlias string
 
-	Title string
+	Title       string
 	Description string
 
 	TextFilename string
-	Text string
-	Active bool
+	Text         string
+	Active       bool
 
 	BaseContainer sBaseContainer
 	ContainerHost sContainerHost
 }
-
 
 // Load all challenges from the challenge directory
 func loadChallenges() {
@@ -68,20 +67,18 @@ func loadChallenges() {
 	}
 }
 
-
 func getChallenges() []Challenge {
 	var strippedChallenges []Challenge
 
 	// Remove challenge texts
 	for _, element := range challengeList {
 		challenge := element // copy challenge
-		challenge.Text = "" // remove text of challenge
+		challenge.Text = ""  // remove text of challenge
 		strippedChallenges = append(strippedChallenges, challenge)
 	}
 
 	return strippedChallenges
 }
-
 
 func getChallenge(challengeId string) (error, Challenge) {
 	for index, element := range challengeList {

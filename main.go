@@ -2,22 +2,20 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"math/rand"
-	"time"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/howbazaar/loggo"
 	"github.com/lxc/lxd"
 	"github.com/rs/cors"
-	"github.com/howbazaar/loggo"
 )
-
 
 // Global variables
 var lxdDaemon *lxd.Client
 var logger = loggo.GetLogger("project.main")
-
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano() + 0xcafebabe)
@@ -30,7 +28,6 @@ func main() {
 		os.Exit(1)
 	}
 }
-
 
 func run() error {
 	var err error
@@ -66,14 +63,14 @@ func run() error {
 	//r.HandleFunc("/1.0/challenge/<challenge>/file", restBaseContainerListHandler)
 
 	c := cors.New(cors.Options{
-	    AllowedOrigins: []string{"*"},
-	    AllowCredentials: true,
-			//Debug: true,
-			AllowedHeaders: []string{"Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"},
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+		//Debug: true,
+		AllowedHeaders: []string{"Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"},
 	})
 	handler := c.Handler(r)
 
-	fmt.Println("Yookiterm server");
+	fmt.Println("Yookiterm server")
 	fmt.Println("Listening on: ", config.ServerAddr)
 
 	err = http.ListenAndServe(config.ServerAddr, handler)
@@ -83,7 +80,6 @@ func run() error {
 
 	return nil
 }
-
 
 func initLogger() {
 	logger.SetLogLevel(loggo.DEBUG)
