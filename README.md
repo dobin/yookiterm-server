@@ -23,17 +23,21 @@ vi yookiterm-server.yml
 # get challenges
 cd ../
 git clone https://github.com/dobin/yookiterm-challenges.git
+
+# create base container
+lxc init ubuntu:16.04 hlUbuntu32
+lxc init ubuntu:16.04 hlUbuntu64
 ```
 
 ## Config file
 
 Things to update:
-* jwtsecret
-* server_domain
+* jwtsecret: A unique random string, keep it secret. Use same for yookiterm-lxdserver
+* server_domain:
 * admin_password
 * user_password
 * container_hosts
-* base_containers 
+* base_containers
 
 ```yml
 jwtsecret: "<choose secret>"
