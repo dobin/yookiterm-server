@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/auth0/go-jwt-middleware"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/form3tech-oss/jwt-go"
 	"net/http"
 	"time"
 )
@@ -93,7 +93,6 @@ var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 })
 
 func userAuthToken(isAdmin bool, userId string) string {
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"admin":  isAdmin,
 		"userId": userId,
@@ -112,6 +111,7 @@ var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	},
 	SigningMethod: jwt.SigningMethodHS256,
 })
+
 
 var authTest = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	// Here we are converting the slice of products to json
