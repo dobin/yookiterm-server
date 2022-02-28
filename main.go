@@ -9,12 +9,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/howbazaar/loggo"
-	"github.com/lxc/lxd"
 	"github.com/rs/cors"
 )
 
 // Global variables
-var lxdDaemon *lxd.Client
 var logger = loggo.GetLogger("project.main")
 
 func main() {
