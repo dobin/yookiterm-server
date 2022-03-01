@@ -20,8 +20,8 @@ type serverConfig struct {
 	BaseContainers  []sBaseContainer `yaml:"base_containers"`
 	AdminPassword   string           `yaml:"admin_password"`
 	UserPassword    string           `yaml:"user_password"`
-	GoogleId        string           `yaml:"googleId`
-	GoogleSecret    string           `yaml:"googleSecret`
+	GoogleId        string           `yaml:"googleId"`
+	GoogleSecret    string           `yaml:"googleSecret"`
 }
 
 type sBaseContainer struct {
@@ -38,19 +38,17 @@ type sContainerHost struct {
 	SshBasePort   int
 }
 
-type statusCode int
-
 func parseConfig() error {
 	data, err := ioutil.ReadFile("yookiterm-server.yml")
 	if os.IsNotExist(err) {
-		return fmt.Errorf("The configuration file (yookiterm-server.yml) doesn't exist.")
+		return fmt.Errorf("the configuration file (yookiterm-server.yml) doesn't exist")
 	} else if err != nil {
-		return fmt.Errorf("Unable to read the configuration: %s", err)
+		return fmt.Errorf("unable to read the configuration %s", err)
 	}
 
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		return fmt.Errorf("Unable to parse the configuration: %s", err)
+		return fmt.Errorf("unable to parse the configuration %s", err)
 	}
 
 	if config.ServerAddr == "" {
