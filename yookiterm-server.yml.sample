@@ -6,6 +6,8 @@ server_domain: "container.exploit.courses"
 challenges_dir: "../yookiterm-challenges"
 admin_password: "<pw>"
 user_password: "<pw>"
+googleId: ""
+googleSecret: ""
 
 container_hosts:
 - hostnamealias: ubuntuaslr

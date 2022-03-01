@@ -39,9 +39,6 @@ func run() error {
 		return err
 	}
 
-	// Start the configuration file watcher
-	configWatcher()
-
 	// Load the challenges
 	loadChallenges()
 
@@ -49,10 +46,8 @@ func run() error {
 	r := mux.NewRouter()
 
 	// Authentication Providers
-	clientId := ""
-	clientSecret := ""
 	goth.UseProviders(
-		google.New(clientId, clientSecret, "http://exploit.courses/1.0/auth/google/callback", "email"),
+		google.New(config.GoogleId, config.GoogleSecret, "http://exploit.courses/1.0/auth/google/callback", "email"),
 	)
 
 	// Authentication
