@@ -9,16 +9,17 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/howbazaar/loggo"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/providers/google"
 	"github.com/rs/cors"
 )
 
-// Global variables
 var logger = loggo.GetLogger("project.main")
 
 func main() {
-	rand.Seed(time.Now().UTC().UnixNano() + 0xcafebabe)
-
 	var err error
+
+	rand.Seed(time.Now().UTC().UnixNano() + 0xcafebabe)
 
 	err = run()
 	if err != nil {
@@ -47,11 +48,18 @@ func run() error {
 	// Setup the HTTP server
 	r := mux.NewRouter()
 
-	// Authentication
-	r.Handle("/1.0/hl-sso-auth", HlSsoHandler)
-	r.Handle("/1.0/get-token", GetTokenHandler)
-	r.Handle("/1.0/authTest", jwtMiddleware.Handler(authTest))
+	// Authentication Providers
+	clientId := ""
+	clientSecret := ""
+	goth.UseProviders(
+		google.New(clientId, clientSecret, "http://exploit.courses/1.0/auth/google/callback", "email"),
+	)
 
+	// Authentication
+	r.Handle("/1.0/auth/{provider}/callback", AuthProviderCallbackHandler)
+	r.Handle("/1.0/auth/{provider}", AuthProviderHandler)
+
+	// Authenticated
 	r.Handle("/1.0/containerHosts", jwtMiddleware.Handler(restContainerHostListHandler))
 	r.Handle("/1.0/baseContainers", jwtMiddleware.Handler(restBaseContainerListHandler))
 
@@ -59,6 +67,11 @@ func run() error {
 	r.Handle("/1.0/challenges", restChallengeListHandler)
 	r.Handle("/1.0/challenge/{challengeId}", restChallengeHandler)
 	//r.HandleFunc("/1.0/challenge/<challenge>/file", restBaseContainerListHandler)
+
+	// Static HTML
+	// Requires yookiterm project in parent directory
+	// Should be at the end of the router
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("../yookiterm/app/")))
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
