@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/form3tech-oss/jwt-go"
@@ -30,8 +32,17 @@ var AuthProviderCallbackHandler = http.HandlerFunc(
 			return
 		}
 
+		// We would need some kind of "nickname"
+		// But all we have is names and email
+		// As it should be unique, just use all non-special letters from email
+		reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+		if err != nil {
+			log.Fatal(err)
+		}
+		userId := reg.ReplaceAllString(user.Email, "")
+
 		// Auth success, set cookie
-		token := userAuthToken(false, user.Email)
+		token := userAuthToken(false, userId)
 		t := "token=" + token + "; Path=/;"
 		logger.Infof("Token: %s", t)
 		res.Header().Set("Set-Cookie", t)
