@@ -35,6 +35,9 @@ var AuthProviderCallbackHandler = http.HandlerFunc(
 		t := "token=" + token + "; Path=/;"
 		logger.Infof("Token: %s", t)
 		res.Header().Set("Set-Cookie", t)
+
+		// Redirect
+		http.Redirect(res, req, "/", http.StatusPermanentRedirect)
 	},
 )
 
