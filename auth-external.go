@@ -1,22 +1,22 @@
 package main
 
 import (
+	"crypto/sha256"
 	"fmt"
-	"log"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/form3tech-oss/jwt-go"
 	"github.com/markbates/goth/gothic"
 )
 
-func userAuthToken(isAdmin bool, userId string) string {
+func userAuthToken(isAdmin bool, userId, userName string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"admin":  isAdmin,
-		"userId": userId,
-		"nbf":    time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
-		"exp":    time.Now().Add(time.Hour * 24).Unix(),
+		"admin":    isAdmin,
+		"userId":   userId,
+		"userName": userName,
+		"nbf":      time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	})
 
 	tokenString, _ := token.SignedString([]byte(config.Jwtsecret))
@@ -32,17 +32,29 @@ var AuthProviderCallbackHandler = http.HandlerFunc(
 			return
 		}
 
-		// We would need some kind of "nickname"
-		// But all we have is names and email
-		// As it should be unique, just use all non-special letters from email
-		reg, err := regexp.Compile("[^a-zA-Z0-9]+")
-		if err != nil {
-			log.Fatal(err)
-		}
-		userId := reg.ReplaceAllString(user.Email, "")
+		// The userId needs to be unique, so no collisions happening
+		// e.g. for the created container.
+		// It also should be of a constant length, so the hostname is
+		// of a certain length, which makes the stack more predictable.
+		// Part of hash of email address...
+		// 4bit entropy * 8 chars = 32 bit entropy
+		userHash := sha256.Sum256([]byte(user.Email))
+		userId := string(userHash[:8])
+
+		/*
+			// Previously:
+			// We would need some kind of "nickname"
+			// But all we have is names and email
+			// As it should be unique, just use all non-special letters from email
+			reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+			if err != nil {
+				log.Fatal(err)
+			}
+			userId := reg.ReplaceAllString(user.Email, "")
+		*/
 
 		// Auth success, set cookie
-		token := userAuthToken(false, userId)
+		token := userAuthToken(false, userId, user.Email)
 		t := "token=" + token + "; Path=/;"
 		logger.Infof("Token: %s", t)
 		res.Header().Set("Set-Cookie", t)
