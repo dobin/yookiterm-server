@@ -63,6 +63,9 @@ func run() error {
 	r.Handle("/1.0/challenge/{challengeId}", restChallengeHandler)
 	//r.HandleFunc("/1.0/challenge/<challenge>/file", restBaseContainerListHandler)
 
+	// Static Files: Slides
+	r.PathPrefix("/files/").Handler(http.StripPrefix("/files/", http.FileServer(http.Dir("../yookiterm-slides/"))))
+
 	// Static HTML
 	// Requires yookiterm project in parent directory
 	// Should be at the end of the router

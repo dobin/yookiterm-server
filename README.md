@@ -1,6 +1,8 @@
 # Yookiterm-server
 
-The main backend part of yookiterm. Manages challenges and yookiterm-lxdserver.
+The main backend part of yookiterm. Provides challenges, and hints to where the actual 
+yookiterm-lxdserver are. The UI will mostly query this server.
+
 
 ## What is yookiterm
 
@@ -9,7 +11,16 @@ terminal, and accompagning tutorials and writeups of
 certain topics. It is currently used as a plattform
 teaching exploit development at an university.
 
+
 ## Install
+
+Make sure you have something like the following directory structure: 
+* /opt/exploit.courses/
+  * yookiterm-server/ (this)
+  * yookiterm/ (Angular UI)
+  * yookiterm-slides/ (slides PDF)
+  * yookiterm-challenges/ (challenges markdown)
+
 
 ```
 # build
@@ -24,7 +35,10 @@ vi yookiterm-server.yml
 cd ../
 git clone https://github.com/dobin/yookiterm-challenges.git
 
-# create base container
+# provide UI (optional)
+git clone https://github.com/dobin/yookiterm.git
+
+# create base container0
 lxc init ubuntu:16.04 hlUbuntu32
 lxc init ubuntu:16.04 hlUbuntu64
 ```
@@ -32,8 +46,8 @@ lxc init ubuntu:16.04 hlUbuntu64
 ## Config file
 
 Things to update:
-* jwtsecret: A unique random string, keep it secret. Use same for yookiterm-lxdserver
-* server_domain:
+* jwtsecret: A unique random string, keep it secret. Use same for yookiterm-lxdserver!
+* server_domain: Not used
 * admin_password
 * user_password
 * container_hosts
