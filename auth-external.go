@@ -38,7 +38,7 @@ var AuthProviderCallbackHandler = http.HandlerFunc(
 		// of a certain length, which makes the stack more predictable.
 		// Part of hash of email address...
 		// 4bit entropy * 8 chars = 32 bit entropy
-		userHash := sha256.Sum256([]byte(user.Email))
+		userHash := fmt.Sprintf("%x", sha256.Sum256([]byte(user.Email)))
 		userId := string(userHash[:8])
 
 		/*
