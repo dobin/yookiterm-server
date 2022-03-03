@@ -1,9 +1,12 @@
 jwtsecret: "<choose secret>"
-server_addr: "[::]:8090"
+server_addr: "[::]:80"
 server_banned_ips:
-server_maintenance: false
-server_domain: "container.exploit.courses"
+server_url: "https://exploit.courses"
+
 challenges_dir: "../yookiterm-challenges"
+slides_dir: "../yookiterm-slides/"
+frontend_dir: "../yookiterm/app/"
+
 admin_password: "<pw>"
 user_password: "<pw>"
 googleId: ""

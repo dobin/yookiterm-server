@@ -11,17 +11,22 @@ import (
 var config serverConfig
 
 type serverConfig struct {
-	ServerAddr      string           `yaml:"server_addr"`
-	ServerBannedIPs []string         `yaml:"server_banned_ips"`
-	Jwtsecret       string           `yaml:"jwtsecret"`
-	server_domain   string           `yaml:"server_domain"`
-	ChallengesDir   string           `yaml:"challenges_dir"`
-	ContainerHosts  []sContainerHost `yaml:"container_hosts"`
-	BaseContainers  []sBaseContainer `yaml:"base_containers"`
-	AdminPassword   string           `yaml:"admin_password"`
-	UserPassword    string           `yaml:"user_password"`
-	GoogleId        string           `yaml:"googleId"`
-	GoogleSecret    string           `yaml:"googleSecret"`
+	ServerAddr      string   `yaml:"server_addr"`
+	ServerBannedIPs []string `yaml:"server_banned_ips"`
+	Jwtsecret       string   `yaml:"jwtsecret"`
+	ServerUrl       string   `yaml:"server_url"`
+
+	ChallengesDir string `yaml:"challenges_dir"`
+	SlidesDir     string `yaml:"slides_dir"`
+	FrontendDir   string `yaml:"frontend_dir"`
+
+	AdminPassword string `yaml:"admin_password"`
+	UserPassword  string `yaml:"user_password"`
+	GoogleId      string `yaml:"googleId"`
+	GoogleSecret  string `yaml:"googleSecret"`
+
+	ContainerHosts []sContainerHost `yaml:"container_hosts"`
+	BaseContainers []sBaseContainer `yaml:"base_containers"`
 }
 
 type sBaseContainer struct {

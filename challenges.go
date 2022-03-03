@@ -28,7 +28,6 @@ type Challenge struct {
 
 // Load all challenges from the challenge directory
 func loadChallenges() {
-	fmt.Println("Loading challenges")
 	challengesDir := config.ChallengesDir
 
 	// read all directories in challenges directory
@@ -65,6 +64,7 @@ func loadChallenges() {
 			}
 		}
 	}
+	fmt.Printf("Loaded %d challenges\n", len(challengeList))
 }
 
 func getChallenges() []Challenge {

@@ -32,6 +32,7 @@ func run() error {
 	var err error
 
 	initLogger()
+	fmt.Printf("Yookiterm server\n")
 
 	// Setup configuration
 	err = parseConfig()
@@ -47,7 +48,7 @@ func run() error {
 
 	// Authentication Providers
 	goth.UseProviders(
-		google.New(config.GoogleId, config.GoogleSecret, "http://exploit.courses/1.0/auth/google/callback", "email"),
+		google.New(config.GoogleId, config.GoogleSecret, config.ServerUrl+"/1.0/auth/google/callback", "email"),
 	)
 
 	// Authentication
@@ -64,12 +65,12 @@ func run() error {
 	//r.HandleFunc("/1.0/challenge/<challenge>/file", restBaseContainerListHandler)
 
 	// Static Files: Slides
-	r.PathPrefix("/files/").Handler(http.StripPrefix("/files/", http.FileServer(http.Dir("../yookiterm-slides/"))))
+	r.PathPrefix("/files/").Handler(http.StripPrefix("/files/", http.FileServer(http.Dir(config.SlidesDir))))
 
 	// Static HTML
 	// Requires yookiterm project in parent directory
 	// Should be at the end of the router
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("../yookiterm/app/")))
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir(config.FrontendDir)))
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -79,8 +80,8 @@ func run() error {
 	})
 	handler := c.Handler(r)
 
-	fmt.Println("Yookiterm server")
-	fmt.Println("Listening on: ", config.ServerAddr)
+	fmt.Printf("Listening on  : %s\n", config.ServerAddr)
+	fmt.Printf("Serving domain: %s\n", config.ServerUrl)
 
 	err = http.ListenAndServe(config.ServerAddr, handler)
 	if err != nil {
