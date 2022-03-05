@@ -10,7 +10,7 @@ import (
 	"github.com/form3tech-oss/jwt-go"
 )
 
-func userAuthToken(isAdmin bool, userId, userName string) string {
+func MakeUserAuthToken(isAdmin bool, userId, userName string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"admin":    isAdmin,
 		"userId":   userId,
@@ -67,7 +67,7 @@ var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 		logger.Infof("User %s authenticated successfully", userId)
 	}
 
-	token := userAuthToken(isAdmin, userId, userId)
+	token := MakeUserAuthToken(isAdmin, userId, userId)
 	body := make(map[string]interface{})
 	body["token"] = token
 

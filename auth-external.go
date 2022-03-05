@@ -38,7 +38,7 @@ var AuthProviderCallbackHandler = http.HandlerFunc(
 		*/
 
 		// Auth success, set cookie
-		token := userAuthToken(false, userId, user.Email)
+		token := MakeUserAuthToken(false, userId, user.Email)
 		t := "token=" + token + "; Path=/;"
 		logger.Infof("Token: %s", t)
 		res.Header().Set("Set-Cookie", t)
