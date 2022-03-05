@@ -4,25 +4,9 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/form3tech-oss/jwt-go"
 	"github.com/markbates/goth/gothic"
 )
-
-func userAuthToken(isAdmin bool, userId, userName string) string {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"admin":    isAdmin,
-		"userId":   userId,
-		"userName": userName,
-		"nbf":      time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
-	})
-
-	tokenString, _ := token.SignedString([]byte(config.Jwtsecret))
-
-	return tokenString
-}
 
 var AuthProviderCallbackHandler = http.HandlerFunc(
 	func(res http.ResponseWriter, req *http.Request) {

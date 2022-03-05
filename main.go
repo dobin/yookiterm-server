@@ -54,6 +54,7 @@ func run() error {
 	// Authentication
 	r.Handle("/1.0/auth/{provider}/callback", AuthProviderCallbackHandler)
 	r.Handle("/1.0/auth/{provider}", AuthProviderHandler)
+	r.Handle("/1.0/get-token", GetTokenHandler)
 
 	// Authenticated
 	r.Handle("/1.0/containerHosts", jwtMiddleware.Handler(restContainerHostListHandler))
