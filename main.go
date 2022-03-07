@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"github.com/howbazaar/loggo"
 	"github.com/markbates/goth"
+	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/azureadv2"
 	"github.com/markbates/goth/providers/google"
 	"github.com/rs/cors"
@@ -52,6 +54,8 @@ func run() error {
 		google.New(config.GoogleId, config.GoogleSecret, config.ServerUrl+"/1.0/auth/google/callback", "email"),
 		azureadv2.New(config.AzureId, config.AzureSecret, config.ServerUrl+"/1.0/auth/azureadv2/callback", azureadv2.ProviderOptions{}),
 	)
+	store := sessions.NewFilesystemStore("", []byte("fuck")) // disable cookie store as we dont need it and its broken
+	gothic.Store = store
 
 	// Authentication
 	r.Handle("/1.0/auth/{provider}/callback", AuthProviderCallbackHandler)
