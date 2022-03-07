@@ -22,8 +22,11 @@ type serverConfig struct {
 
 	AdminPassword string `yaml:"admin_password"`
 	UserPassword  string `yaml:"user_password"`
-	GoogleId      string `yaml:"googleId"`
-	GoogleSecret  string `yaml:"googleSecret"`
+
+	GoogleId     string `yaml:"googleId"`
+	GoogleSecret string `yaml:"googleSecret"`
+	AzureId      string `yaml:"azureId"`
+	AzureSecret  string `yaml:"azureSecret"`
 
 	ContainerHosts []sContainerHost `yaml:"container_hosts"`
 	BaseContainers []sBaseContainer `yaml:"base_containers"`

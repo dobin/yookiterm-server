@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/howbazaar/loggo"
 	"github.com/markbates/goth"
+	"github.com/markbates/goth/providers/azureadv2"
 	"github.com/markbates/goth/providers/google"
 	"github.com/rs/cors"
 )
@@ -49,6 +50,7 @@ func run() error {
 	// Authentication Providers
 	goth.UseProviders(
 		google.New(config.GoogleId, config.GoogleSecret, config.ServerUrl+"/1.0/auth/google/callback", "email"),
+		azureadv2.New(config.AzureId, config.AzureSecret, config.ServerUrl+"/1.0/auth/azureadv2/callback", azureadv2.ProviderOptions{}),
 	)
 
 	// Authentication

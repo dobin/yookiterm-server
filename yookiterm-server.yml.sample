@@ -9,8 +9,11 @@ frontend_dir: "../yookiterm/app/"
 
 admin_password: "<pw>"
 user_password: "<pw>"
+
 googleId: ""
 googleSecret: ""
+azureId: ""
+azureSecret: ""
 
 container_hosts:
 - hostnamealias: ubuntuaslr
