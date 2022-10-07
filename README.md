@@ -15,7 +15,7 @@ teaching exploit development at an university.
 ## Install
 
 Make sure you have something like the following directory structure: 
-* /opt/exploit.courses/
+* /home/yookiterm/
   * yookiterm-server/ (this)
   * yookiterm/ (Angular UI)
   * yookiterm-slides/ (slides PDF)
@@ -87,4 +87,13 @@ base_containers:
 - id: "2"
   name: "hlUbuntu64"
   bits: "64"
+```
+
+
+# Service 
+
+```
+cp yookiterm.service /etc/systemd/system
+systemctl enable yookiterm
+systemctl start yookiterm
 ```

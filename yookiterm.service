@@ -1,0 +1,10 @@
+[Unit]
+Description=Yookiterm
+
+[Service]
+Type=simple
+WorkingDirectory=/home/yookiterm/yookiterm-server
+ExecStart=/home/yookiterm/yookiterm-server/yookiterm-server
+
+[Install]
+WantedBy=multi-user.target
