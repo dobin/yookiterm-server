@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"path/filepath"
 )
 
 var challengeList []Challenge
@@ -17,8 +16,8 @@ type Challenge struct {
 
 	Title       string
 	Description string
+	Chapter		string
 
-	TextFilename string
 	Text         string
 	Active       bool
 
@@ -34,34 +33,33 @@ func loadChallenges() {
 	// ./challenges/*
 	dirs, _ := ioutil.ReadDir(challengesDir)
 	for _, d := range dirs {
+		// read json file in challenges/challengeX/
+		filename := challengesDir + "/" + d.Name() + "/" + d.Name() + ".json"
 
-		// read json files in challenges/challengX/
-		files, _ := filepath.Glob(challengesDir + "/" + d.Name() + "/" + "*.json")
-		for _, f := range files {
-			// read json file
-			fileContent, e := ioutil.ReadFile(f)
-			if e != nil {
-				fmt.Println("Error reading file: ", f)
-			}
+		fileContent, e := ioutil.ReadFile(filename)
+		if e != nil {
+			fmt.Println("Error reading file: ", filename)
+		}
 
-			// create challenge based on json file
-			var challenge Challenge
-			json.Unmarshal(fileContent, &challenge)
+		// create challenge based on json file
+		var challenge Challenge
+		json.Unmarshal(fileContent, &challenge)
 
-			// also read markup file, as referenced in the json file
-			var markupFilename = challenge.TextFilename
-			markupFileContent, ee := ioutil.ReadFile(challengesDir + "/" + d.Name() + "/" + markupFilename)
-			if ee != nil {
-				fmt.Println("Error reading file: ", f)
-			}
-			challenge.Text = string(markupFileContent)
+		// also read markup file, as referenced in the json file
+		var markupFilename = challengesDir + "/" + d.Name() + "/" + d.Name() + ".md"
+		markupFileContent, e := ioutil.ReadFile(markupFilename)
+		if e != nil {
+			fmt.Println("Error reading file: ", filename)
+		}
+		challenge.Text = string(markupFileContent)
 
-			challenge.BaseContainer = getBaseContainerByName(challenge.ContainerBaseName)
-			challenge.ContainerHost = getContainerHostByAlias(challenge.ContainerHostAlias)
+		challenge.Id = d.Name()[len(d.Name())-2:]  // last two characters are the id
 
-			if challenge.Active {
-				challengeList = append(challengeList, challenge)
-			}
+		challenge.BaseContainer = getBaseContainerByName(challenge.ContainerBaseName)
+		challenge.ContainerHost = getContainerHostByAlias(challenge.ContainerHostAlias)
+
+		if challenge.Active {
+			challengeList = append(challengeList, challenge)
 		}
 	}
 	fmt.Printf("Loaded %d challenges\n", len(challengeList))

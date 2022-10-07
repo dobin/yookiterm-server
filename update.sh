@@ -11,6 +11,6 @@ git pull
 
 cd /home/yookiterm/yookiterm-server
 git pull
-/usr/local/go/bin/go build
+go build
 
 sudo /bin/systemctl restart yookiterm
