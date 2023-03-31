@@ -1,7 +1,7 @@
 jwtsecret: "<choose secret>"
 server_addr: "[::]:80"
 server_banned_ips:
-server_url: "https://exploit.courses"
+server_url: "https://my.website"
 
 challenges_dir: "../yookiterm-challenges"
 slides_dir: "../yookiterm-slides/"
@@ -17,25 +17,25 @@ azureSecret: ""
 
 container_hosts:
 - hostnamealias: ubuntuaslr
-  hostname: container.exploit.courses:41443
+  hostname: my.website:41443
   aslr: true
   arch: intel
   sshbaseport: 51000
 - hostnamealias: ubuntunoaslr
-  hostname: container.exploit.courses:42443
+  hostname: my.website:42443
   aslr: false
   arch: intel
   sshbaseport: 52000
-- hostnamealias: ubuntuarm
-  hostname: container.exploit.courses:43443
-  aslr: true
-  arch: arm
-  sshbaseport: 53000
+#- hostnamealias: ubuntuarm
+#  hostname: my.website:43443
+#  aslr: true
+#  arch: arm
+#  sshbaseport: 53000
 
 base_containers:
 - id: "1"
-  name: "hlUbuntu32"
+  name: "Debian32"
   bits: "32"
 - id: "2"
-  name: "hlUbuntu64"
+  name: "Debian64"
   bits: "64"
